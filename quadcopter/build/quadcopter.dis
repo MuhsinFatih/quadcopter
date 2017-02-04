@@ -476,7 +476,7 @@ void Reset_Handler(void)
  80002ea:	bf00      	nop
  80002ec:	20000000 	.word	0x20000000
  80002f0:	20000028 	.word	0x20000028
- 80002f4:	08000d1c 	.word	0x08000d1c
+ 80002f4:	08000d20 	.word	0x08000d20
  80002f8:	20000028 	.word	0x20000028
  80002fc:	2000002c 	.word	0x2000002c
 
@@ -3469,8 +3469,8 @@ void GPIO_PinAFConfig(GPIO_TypeDef* GPIOx, uint16_t GPIO_PinSource, uint8_t GPIO
 // microsecond resolution
 void setSysTick() {
 	if (SysTick_Config(SystemCoreClock / 1000000)) {
- 8000c84:	4b1f      	ldr	r3, [pc, #124]	; (8000d04 <main+0x80>)
- 8000c86:	4a20      	ldr	r2, [pc, #128]	; (8000d08 <main+0x84>)
+ 8000c84:	4b20      	ldr	r3, [pc, #128]	; (8000d08 <main+0x84>)
+ 8000c86:	4a21      	ldr	r2, [pc, #132]	; (8000d0c <main+0x88>)
  8000c88:	681b      	ldr	r3, [r3, #0]
  8000c8a:	fba2 2303 	umull	r2, r3, r2, r3
  8000c8e:	0c9b      	lsrs	r3, r3, #18
@@ -3493,14 +3493,14 @@ int main() {
  8000c9a:	b500      	push	{lr}
 
   SysTick->LOAD  = ticks - 1;                                  /* set reload register */
- 8000c9c:	4a1b      	ldr	r2, [pc, #108]	; (8000d0c <main+0x88>)
+ 8000c9c:	4a1c      	ldr	r2, [pc, #112]	; (8000d10 <main+0x8c>)
     \param [in]  priority  Priority to set.
  */
 __STATIC_INLINE void NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
 {
   if(IRQn < 0) {
     SCB->SHP[((uint32_t)(IRQn) & 0xF)-4] = ((priority << (8 - __NVIC_PRIO_BITS)) & 0xff); } /* set Priority for Cortex-M  System Interrupts */
- 8000c9e:	491c      	ldr	r1, [pc, #112]	; (8000d10 <main+0x8c>)
+ 8000c9e:	491d      	ldr	r1, [pc, #116]	; (8000d14 <main+0x90>)
  */
 __STATIC_INLINE uint32_t SysTick_Config(uint32_t ticks)
 {
@@ -3549,42 +3549,47 @@ void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_Typ
 	initStructure.GPIO_Pin = pin;
 	initStructure.GPIO_Mode = mode;
  8000cc2:	2601      	movs	r6, #1
-	initStructure.GPIO_OType = GPIO_OType_PP;
-	initStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	initStructure.GPIO_PuPd = PuPd;
-	GPIO_Init(GPIOx, &initStructure);
- 8000cc4:	4669      	mov	r1, sp
 
 
 void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_TypeDef PuPd) {
 	GPIO_InitTypeDef initStructure;
 	
 	initStructure.GPIO_Pin = pin;
- 8000cc6:	f44f 4370 	mov.w	r3, #61440	; 0xf000
+ 8000cc4:	f44f 4370 	mov.w	r3, #61440	; 0xf000
+	initStructure.GPIO_Mode = mode;
+	initStructure.GPIO_OType = GPIO_OType_PP;
+	initStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	initStructure.GPIO_PuPd = PuPd;
+	GPIO_Init(GPIOx, &initStructure);
+ 8000cc8:	4669      	mov	r1, sp
+	GPIO_InitTypeDef initStructure;
+	
+	initStructure.GPIO_Pin = pin;
 	initStructure.GPIO_Mode = mode;
 	initStructure.GPIO_OType = GPIO_OType_PP;
 	initStructure.GPIO_Speed = GPIO_Speed_100MHz;
  8000cca:	2503      	movs	r5, #3
 	initStructure.GPIO_PuPd = PuPd;
 	GPIO_Init(GPIOx, &initStructure);
- 8000ccc:	4811      	ldr	r0, [pc, #68]	; (8000d14 <main+0x90>)
+ 8000ccc:	4812      	ldr	r0, [pc, #72]	; (8000d18 <main+0x94>)
+
+
 void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_TypeDef PuPd) {
 	GPIO_InitTypeDef initStructure;
 	
 	initStructure.GPIO_Pin = pin;
+ 8000cce:	9300      	str	r3, [sp, #0]
 	initStructure.GPIO_Mode = mode;
 	initStructure.GPIO_OType = GPIO_OType_PP;
- 8000cce:	f88d 4006 	strb.w	r4, [sp, #6]
+ 8000cd0:	f88d 4006 	strb.w	r4, [sp, #6]
 	initStructure.GPIO_Speed = GPIO_Speed_100MHz;
 	initStructure.GPIO_PuPd = PuPd;
- 8000cd2:	f88d 4007 	strb.w	r4, [sp, #7]
-
+ 8000cd4:	f88d 4007 	strb.w	r4, [sp, #7]
 
 void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_TypeDef PuPd) {
 	GPIO_InitTypeDef initStructure;
 	
 	initStructure.GPIO_Pin = pin;
- 8000cd6:	9300      	str	r3, [sp, #0]
 	initStructure.GPIO_Mode = mode;
  8000cd8:	f88d 6004 	strb.w	r6, [sp, #4]
 	initStructure.GPIO_OType = GPIO_OType_PP;
@@ -3593,37 +3598,46 @@ void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_Typ
 	initStructure.GPIO_PuPd = PuPd;
 	GPIO_Init(GPIOx, &initStructure);
  8000ce0:	f7ff ff22 	bl	8000b28 <GPIO_Init>
- 8000ce4:	4669      	mov	r1, sp
- 8000ce6:	480c      	ldr	r0, [pc, #48]	; (8000d18 <main+0x94>)
+	
+	initStructure.GPIO_Pin = pin;
+	initStructure.GPIO_Mode = mode;
+	initStructure.GPIO_OType = GPIO_OType_PP;
+	initStructure.GPIO_Speed = GPIO_Speed_100MHz;
+	initStructure.GPIO_PuPd = PuPd;
+ 8000ce4:	2302      	movs	r3, #2
+	GPIO_Init(GPIOx, &initStructure);
+ 8000ce6:	4669      	mov	r1, sp
+ 8000ce8:	480c      	ldr	r0, [pc, #48]	; (8000d1c <main+0x98>)
 
 
 void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_TypeDef PuPd) {
 	GPIO_InitTypeDef initStructure;
 	
 	initStructure.GPIO_Pin = pin;
- 8000ce8:	9600      	str	r6, [sp, #0]
+ 8000cea:	9600      	str	r6, [sp, #0]
 	initStructure.GPIO_Mode = mode;
- 8000cea:	f88d 4004 	strb.w	r4, [sp, #4]
+ 8000cec:	f88d 4004 	strb.w	r4, [sp, #4]
 	initStructure.GPIO_OType = GPIO_OType_PP;
- 8000cee:	f88d 4006 	strb.w	r4, [sp, #6]
+ 8000cf0:	f88d 4006 	strb.w	r4, [sp, #6]
 	initStructure.GPIO_Speed = GPIO_Speed_100MHz;
- 8000cf2:	f88d 5005 	strb.w	r5, [sp, #5]
+ 8000cf4:	f88d 5005 	strb.w	r5, [sp, #5]
 	initStructure.GPIO_PuPd = PuPd;
- 8000cf6:	f88d 4007 	strb.w	r4, [sp, #7]
+ 8000cf8:	f88d 3007 	strb.w	r3, [sp, #7]
 	GPIO_Init(GPIOx, &initStructure);
- 8000cfa:	f7ff ff15 	bl	8000b28 <GPIO_Init>
+ 8000cfc:	f7ff ff14 	bl	8000b28 <GPIO_Init>
 		 GPIO_Pin_0,
 		 INPUT,
-		 NOPULL);
+		 GPIO_PuPd_DOWN);
 //	GPIO_SetBits(GPIOD, GPIO_Pin_14);
 	while(true) {
 		loop();
- 8000cfe:	f7ff fa8b 	bl	8000218 <loop>
+ 8000d00:	f7ff fa8a 	bl	8000218 <loop>
 	}
- 8000d02:	e7fc      	b.n	8000cfe <main+0x7a>
- 8000d04:	20000014 	.word	0x20000014
- 8000d08:	431bde83 	.word	0x431bde83
- 8000d0c:	e000e010 	.word	0xe000e010
- 8000d10:	e000ed00 	.word	0xe000ed00
- 8000d14:	40020c00 	.word	0x40020c00
- 8000d18:	40020000 	.word	0x40020000
+ 8000d04:	e7fc      	b.n	8000d00 <main+0x7c>
+ 8000d06:	bf00      	nop
+ 8000d08:	20000014 	.word	0x20000014
+ 8000d0c:	431bde83 	.word	0x431bde83
+ 8000d10:	e000e010 	.word	0xe000e010
+ 8000d14:	e000ed00 	.word	0xe000ed00
+ 8000d18:	40020c00 	.word	0x40020c00
+ 8000d1c:	40020000 	.word	0x40020000

@@ -84,7 +84,7 @@ int main() {
 	gpio(GPIOA,
 		 GPIO_Pin_0,
 		 INPUT,
-		 NOPULL);
+		 GPIO_PuPd_DOWN);
 //	GPIO_SetBits(GPIOD, GPIO_Pin_14);
 	while(true) {
 		loop();
