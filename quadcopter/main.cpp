@@ -14,7 +14,7 @@
 #define setup main	// i like simplicity :D
 
 #ifndef BAUDRATE
-	#define BAUDRATE 230400 
+#define BAUDRATE 230400
 #endif
 
 #include <stdio.h>
@@ -23,17 +23,19 @@
 #include "def.h"
 #include <math.h>
 #include <stdlib.h>
-
+#include <cstring>
+#include "main.hpp"
 
 void loop();
 
 static char msg[255];
 
 // MARK: timer
-
 // microsecond resolution
 void setSysTick() {
-	if (SysTick_Config(SystemCoreClock / 1000000))	usart_puts(USART2, "error in setSysTick()");
+	if (SysTick_Config(SystemCoreClock / 1000000)) {
+		//usart_puts(USART2, "error in setSysTick()");
+	}
 }
 void enableSysTick() {
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk; // enable
@@ -85,8 +87,8 @@ static uint32_t startAsyncStopwatch() {
 #define stopAsyncTimer disableSysTick();
 static uint32_t elapsedTime(uint32_t offset, timeinterval interval){
 	int ret = floor(ticks / interval);
-//	sprintf(msg, "%u ticks %i interval %i ticks/interval %u offset\n", ticks, interval, ret, offset);
-//	usart_puts(USART2, msg);
+	//	sprintf(msg, "%u ticks %i interval %i ticks/interval %u offset\n", ticks, interval, ret, offset);
+	//	usart_puts(USART2, msg);
 	return ret - offset;
 }
 
@@ -102,89 +104,7 @@ void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_Typ
 	GPIO_Init(GPIOx, &initStructure);
 }
 
-// MARK: usart setup //TODO: fix rx, tx params. currently stm picks one magically for rx and tx
-void setup_USART(int rx, int tx) {
-	GPIO_InitTypeDef gpioStructure;
-	USART_InitTypeDef usartStructure;
-	NVIC_InitTypeDef nvicStructure;
-	
-	int pins[2] = {pow(2,rx),pow(2,tx)};
-	// Enable the periph clock for usart1
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
-	// Enable the GPIOA clock
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-	
-	// Setup the gpio pins for Tx and Rx
-	gpioStructure.GPIO_Pin = pins[0] | pins[1];
-	gpioStructure.GPIO_Mode = GPIO_Mode_AF;
-	gpioStructure.GPIO_Speed = GPIO_Speed_50MHz;
-	gpioStructure.GPIO_OType = GPIO_OType_PP;
-	gpioStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	
-	GPIO_Init(GPIOA, &gpioStructure);
-	
-	GPIO_PinAFConfig(GPIOA, rx, GPIO_AF_USART2);
-	GPIO_PinAFConfig(GPIOA, tx, GPIO_AF_USART2);
-	
-	usartStructure.USART_BaudRate = BAUDRATE;
-	usartStructure.USART_WordLength = USART_WordLength_8b;
-	usartStructure.USART_StopBits = USART_StopBits_1;
-	usartStructure.USART_Parity = USART_Parity_No;
-	usartStructure.USART_HardwareFlowControl = USART_HardwareFlowControl_None;
-	usartStructure.USART_Mode = USART_Mode_Rx | USART_Mode_Tx;
-	USART_Init(USART2,&usartStructure);
-	
-	// enable interrupt for receive event on usart
-	USART_ITConfig(USART2, USART_IT_RXNE, ENABLE);
-	
-	//IRQ: interrupt request
-	nvicStructure.NVIC_IRQChannel = USART2_IRQn;
-	nvicStructure.NVIC_IRQChannelPreemptionPriority = 0; // 0: highest priority. (lowest=15)
-	nvicStructure.NVIC_IRQChannelSubPriority = 0;
-	nvicStructure.NVIC_IRQChannelCmd = ENABLE;
-	NVIC_Init(&nvicStructure);
-	
-	USART_Cmd(USART2, ENABLE);
-	
-	
-}
-void usart_puts(USART_TypeDef *USARTx, volatile char *str) {
-	while(*str) {
-//		while(!(USARTx->SR & 0x040)); // get 6'th bit
-		// get the TC (transmission complete) flag
-		while(!USART_GetFlagStatus(USART2, USART_FLAG_TC));
-		USART_SendData(USARTx, *str);
-		*str++;
-	}
-}
-//MARK: read usart input
-#define MAX_WORDLEN		255
-volatile char receivedStr[MAX_WORDLEN + 1];
-volatile bool newDataIn = false;
-extern void usart_puts(USART_TypeDef *USARTx, volatile char *str);
-// Interrupt request handler for all usart2 interrupts
-// This interrupt handler will be executed each time a char is received in usart2
-void USART2_IRQHandler(){
-	// make sure it was usart2 and we didnt screw up things
-	if(USART_GetITStatus(USART2, USART_IT_RXNE)){
-		static int count = 0;
-		char ch = USART2->DR;
-		if((ch != '\n') && (count < MAX_WORDLEN)){
-			receivedStr[count++] = ch;
-		} else {
-			receivedStr[count] = '\n';
-			count = 0;
-			newDataIn = true;
-			usart_puts(USART2, receivedStr);
-		}
-	}
-	
-}
-// return volatile.. http://stackoverflow.com/questions/24515505/assignment-discards-volatile-qualifier-from-pointer-target-type
-volatile char* readUsart() {
-	newDataIn = false;
-	return receivedStr;
-}
+
 
 // MARK: button click with interrupt
 int btnOffset = 0;
@@ -194,9 +114,9 @@ void EXTI0_IRQHandler() {
 	
 	if (EXTI_GetITStatus(EXTI_Line0) && btnElapsed - btnOffset > 300) {
 		btnOffset = btnElapsed;
-		usart_puts(USART2, "you pressed the button\n");
+		//		usart_puts(USART2, "you pressed the button\n");
 		GPIO_ToggleBits(GPIOD, pin14);
-//		delay(200);
+		//		delay(200);
 		
 	}
 	EXTI_ClearITPendingBit(EXTI_Line0); // Clear the flag
@@ -227,8 +147,9 @@ void setup_button() {
 	nvicStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvicStructure);
 	
+	startAsyncStopwatch();
 	
-
+	
 }
 
 const char *byte_to_binary(int x)
@@ -246,7 +167,7 @@ const char *byte_to_binary(int x)
 }
 /**
  setup pwm
-
+ 
  @param pins numbers. not pinx notation. eg: {1,2,3,4}
  @param numOfPins size of the pins array
  */
@@ -263,7 +184,7 @@ void setupPWM(GPIO_TypeDef *GPIOx, int *pins, int numOfPins) {
 	REP(numOfPins){
 		gpioPins |= (uint32_t)pow(2,pins[i]);
 		sprintf(asdf,"gpioPins= %s\n", byte_to_binary(gpioPins));
-		usart_puts(USART2,asdf);
+		//		usart_puts(USART2,asdf);
 	}
 	
 	gpioStructure.GPIO_Pin = gpioPins;
@@ -332,6 +253,7 @@ uint16_t getPeriod(double realPeriod, double frequency, uint32_t clockSpeed , ui
 
 // setup
 int setup() {
+	
 	enableFloatingPoint();
 	setSysTick();
 	setup_button();
@@ -339,36 +261,21 @@ int setup() {
 	// enable GPIOx clock
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
-<<<<<<< HEAD
-	gpio(GPIOD,
-		 GPIO_Pin_12 | GPIO_Pin_13 | GPIO_Pin_14 | GPIO_Pin_15,
-		 OUTPUT,
-		 NOPULL);
-	gpio(GPIOA,
-		 GPIO_Pin_0,
-		 INPUT,
-		 GPIO_PuPd_DOWN);
-//	GPIO_SetBits(GPIOD, GPIO_Pin_14);
-	while(true) {
-		loop();
-	}
-=======
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 	
-	setup_USART(2,3);
+	//	setup_USART(2,3);
 	setupPWM(GPIOB, pwmpins, 2);
 	
 	gpio(GPIOD, (pin12 | pin13 | pin14 | pin15) , OUTPUT, NOPULL);
 	gpio(GPIOA, pin0, INPUT, GPIO_PuPd_DOWN);
 	
 	GPIO_SetBits(GPIOD, pin12); // indicate stm's working fine
-//	GPIO_SetBits(GPIOD, pin14);
+	//	GPIO_SetBits(GPIOD, pin14);
 	
-	usart_puts(USART2, "hello world!\n");
+	//	usart_puts(USART2, "hello world!\n");
 	startAsyncStopwatch();
 	
 	while(true) loop();
->>>>>>> pwm
 	return 0;
 }
 
@@ -379,38 +286,43 @@ bool buttonReleased = true;
 uint32_t offset = 0;
 uint32_t elapsed = 0;
 void loop() {
-	
-	elapsed = elapsedTime(0, seconds);
-//	msg[0] = '\0';
-	
-	if(elapsed - offset > 0){
-		sprintf(msg, "%i passed\n", elapsed);
-		usart_puts(USART2, msg);
-		offset = elapsed;
+	int elapsed = elapsedTime(offset, microseconds);
+	offset = elapsed;
+	if( elapsed > 1000000){
+		GPIO_ToggleBits(GPIOD, pin15);
 	}
-//	usart_puts(USART2, msg);
 	
-//	uint32_t period = getPeriod(0, frequency, 84 * 1000000, prescaler);
-
+	//	elapsed = elapsedTime(0, seconds);
+	////	msg[0] = '\0';
+	//
+	//	if(elapsed - offset > 0){
+	//		sprintf(msg, "%i passed\n", elapsed);
+	//		usart_puts(USART2, msg);
+	//		offset = elapsed;
+	//	}
+	//	usart_puts(USART2, msg);
 	
-//	for(int i=900; i<2000; ++i) {
-//		TIM4->CCR1 = i;
-//		TIM4->CCR2 = i;
-//		delay_micro(4000);
-//		char qwe[20];
-//		sprintf(qwe,"%i\n", i);
-//		usart_puts(USART2,qwe);
-//		
-//	}
-//	TIM4->CCR1 = 19999;
-//	TIM4->CCR2 = 19999;
-//	delay(30*1000);
-	char* in;
+	//	uint32_t period = getPeriod(0, frequency, 84 * 1000000, prescaler);
 	
-	if (newDataIn) {
-//		TIM4->CCR1 = atoi(readUsart());
-		TIM4->CCR2 = atoi(readUsart());
-	}
+	
+	//	for(int i=900; i<2000; ++i) {
+	//		TIM4->CCR1 = i;
+	//		TIM4->CCR2 = i;
+	//		delay_micro(4000);
+	//		char qwe[20];
+	//		sprintf(qwe,"%i\n", i);
+	//		usart_puts(USART2,qwe);
+	//
+	//	}
+	//	TIM4->CCR1 = 19999;
+	//	TIM4->CCR2 = 19999;
+	//	delay(30*1000);
+	//	char* in;
+	//
+	//	if (newDataIn) {
+	////		TIM4->CCR1 = atoi(readUsart());
+	//		TIM4->CCR2 = atoi(readUsart());
+	//	}
 }
 
 

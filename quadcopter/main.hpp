@@ -1,6 +1,25 @@
 
-#ifndef def_h
-#define def_h
+#pragma once
+#include <stdio.h>
+#include <stdbool.h>
+#include <math.h>
+#include <stdlib.h>
+#include <stm32f4xx.h>
+
+
+#define OUTPUT	GPIO_Mode_OUT
+#define INPUT	GPIO_Mode_IN
+#define NOPULL	GPIO_PuPd_NOPULL
+
+
+#define read(idr,pin) (idr & pin)
+#define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
+#define REP(size) for(size_t i=0, length=size; i<length; ++i)
+#define REPW(size)  size_t w,length; length=size; while(w<length)
+
+#ifndef BAUDRATE
+#define BAUDRATE 230400
+#endif
 
 #define pin0		GPIO_Pin_0  /* Pin 0 selected */
 #define pin1		GPIO_Pin_1  /* Pin 1 selected */
@@ -21,4 +40,14 @@
 #define pinAll		GPIO_Pin_All  /* All pins selected */
 
 
-#endif /* def_h */
+#ifdef __cplusplus
+
+#include "def.h"
+
+extern "C" {
+#endif
+	int main();
+#ifdef __cplusplus
+}
+#endif
+
