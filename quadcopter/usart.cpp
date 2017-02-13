@@ -9,17 +9,29 @@
 #include "usart.hpp"
 
 
-usart::usart(int rx, int tx) {
-	
+USART_TypeDef *USARTx;
+int rx, tx;
+
+usart::usart(USART_TypeDef *USARTx, int rx, int tx) {
+	this->USARTx = *USARTx; // not sure if this is safe
+	setup_USART(rx, tx);
 }
 
-int usart::printf(const char *, ...) {
-	
+int usart::printf(const char *format, ...) {
+	const int size = 512;
+	// following lines are c magic
+	char buffer[size];
+	va_list args;
+	va_start (args, format);
+	vsnprintf (buffer,size,format, args);
+	perror (buffer);
+	va_end (args);
+	usart_puts(&USARTx, (volatile char*)"asdf");
 }
 
 // MARK: usart setup
 //FIXME: fix rx, tx params. currently stm picks one magically for rx and tx
-void setup_USART(int rx, int tx) {
+void usart::setup_USART(int rx, int tx) {
 	GPIO_InitTypeDef gpioStructure;
 	USART_InitTypeDef usartStructure;
 	NVIC_InitTypeDef nvicStructure;
@@ -64,7 +76,7 @@ void setup_USART(int rx, int tx) {
 	
 	
 }
-void usart_puts(USART_TypeDef *USARTx, volatile char *str) {
+void usart::usart_puts(USART_TypeDef *USARTx, volatile char *str) {
 	while(*str) {
 		//		while(!(USARTx->SR & 0x040)); // get 6'th bit
 		// get the TC (transmission complete) flag
@@ -77,7 +89,7 @@ void usart_puts(USART_TypeDef *USARTx, volatile char *str) {
 #define MAX_WORDLEN		255
 volatile char receivedStr[MAX_WORDLEN + 1];
 volatile bool newDataIn = false;
-extern void usart_puts(USART_TypeDef *USARTx, volatile char *str);
+extern void usart_puts(USART_TypeDef *USARTx, char *str);
 // Interrupt request handler for all usart2 interrupts
 // This interrupt handler will be executed each time a char is received in usart2
 void USART2_IRQHandler(){
@@ -97,7 +109,9 @@ void USART2_IRQHandler(){
 	
 }
 // return volatile.. http://stackoverflow.com/questions/24515505/assignment-discards-volatile-qualifier-from-pointer-target-type
-volatile char* readUsart() {
+volatile char* usart::readUsart() {
 	newDataIn = false;
+	char ret[MAX_WORDLEN];
+//	strncpy(ret, receivedStr, strlen(receivedStr));
 	return receivedStr;
 }

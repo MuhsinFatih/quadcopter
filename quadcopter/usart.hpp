@@ -14,18 +14,21 @@
 #include <stdbool.h>
 #include "def.h"
 #include <math.h>
-
+#include <stdarg.h>
+#include <string.h>
 class usart {
-	USART_TypeDef device;
-	public:
-	usart(int rx, int tx);
-	int	 printf(const char * __restrict, ...);
-};
-
-extern "C" {
+private:
+	
+	USART_TypeDef USARTx;
+	int rx, tx;
 	void setup_USART(int rx, int tx);
 	void usart_puts(USART_TypeDef *USARTx, volatile char *str);
-	extern void usart_puts(USART_TypeDef *USARTx, volatile char *str);
 	volatile char* readUsart();
-}
+	
+public:
+	usart(USART_TypeDef *USARTx, int rx, int tx);
+	int printf(const char *, ...);
+	volatile char* read();
+};
+
 #endif /* usart_hpp */

@@ -25,6 +25,7 @@
 #include <stdlib.h>
 #include <cstring>
 #include "main.hpp"
+#include <usart.hpp>
 
 void loop();
 
@@ -323,6 +324,9 @@ void loop() {
 	////		TIM4->CCR1 = atoi(readUsart());
 	//		TIM4->CCR2 = atoi(readUsart());
 	//	}
+	usart usrt(USART2, 6, 7);
+//	usrt.printf(<#const char *, ...#>)
+	
 }
 
 
