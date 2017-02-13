@@ -12,10 +12,11 @@
 #include <stdio.h>
 #include <stm32f4xx.h>
 #include <stdbool.h>
-#include "def.h"
+#include "main.hpp"
 #include <math.h>
 #include <stdarg.h>
-#include <string.h>
+#include <string>
+
 class usart {
 private:
 	
@@ -23,12 +24,11 @@ private:
 	int rx, tx;
 	void setup_USART(int rx, int tx);
 	void usart_puts(USART_TypeDef *USARTx, volatile char *str);
-	volatile char* readUsart();
 	
 public:
 	usart(USART_TypeDef *USARTx, int rx, int tx);
-	int printf(const char *, ...);
-	volatile char* read();
+	void printf(const char *, ...);
+	char* read();
 };
 
 #endif /* usart_hpp */

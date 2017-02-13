@@ -1,31 +1,8 @@
 
-#define OUTPUT	GPIO_Mode_OUT
-#define INPUT	GPIO_Mode_IN
-#define NOPULL	GPIO_PuPd_NOPULL
-
-#define true	1
-#define false	0
-
+#include "main.hpp"
 #define read(idr,pin) (idr & pin)
 #define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
-#define REP(size) for(size_t i=0, length=size; i<length; ++i)
-#define REPW(size)  size_t w,length; length=size; while(w<length)
-
-#define setup main	// i like simplicity :D
-
-#ifndef BAUDRATE
-#define BAUDRATE 230400
-#endif
-
-#include <stdio.h>
-#include <stm32f4xx.h>
-#include <stdbool.h>
-#include "def.h"
-#include <math.h>
-#include <stdlib.h>
-#include <cstring>
-#include "main.hpp"
-#include <usart.hpp>
+#define setup() main()
 
 void loop();
 

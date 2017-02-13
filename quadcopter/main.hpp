@@ -5,6 +5,9 @@
 #include <math.h>
 #include <stdlib.h>
 #include <stm32f4xx.h>
+#include <cstring>
+
+#include "usart.hpp"
 
 
 #define OUTPUT	GPIO_Mode_OUT
@@ -12,8 +15,6 @@
 #define NOPULL	GPIO_PuPd_NOPULL
 
 
-#define read(idr,pin) (idr & pin)
-#define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
 #define REP(size) for(size_t i=0, length=size; i<length; ++i)
 #define REPW(size)  size_t w,length; length=size; while(w<length)
 
@@ -42,7 +43,6 @@
 
 #ifdef __cplusplus
 
-#include "def.h"
 
 extern "C" {
 #endif

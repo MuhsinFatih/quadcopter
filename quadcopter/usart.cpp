@@ -8,6 +8,7 @@
 
 #include "usart.hpp"
 
+using namespace std;
 
 USART_TypeDef *USARTx;
 int rx, tx;
@@ -17,7 +18,7 @@ usart::usart(USART_TypeDef *USARTx, int rx, int tx) {
 	setup_USART(rx, tx);
 }
 
-int usart::printf(const char *format, ...) {
+void usart::printf(const char *format, ...) {
 	const int size = 512;
 	// following lines are c magic
 	char buffer[size];
@@ -26,8 +27,12 @@ int usart::printf(const char *format, ...) {
 	vsnprintf (buffer,size,format, args);
 	perror (buffer);
 	va_end (args);
-	usart_puts(&USARTx, (volatile char*)"asdf");
+	usart_puts(&USARTx, buffer);
 }
+
+//volatile char* read(){
+//	return null;
+//}
 
 // MARK: usart setup
 //FIXME: fix rx, tx params. currently stm picks one magically for rx and tx
@@ -36,7 +41,7 @@ void usart::setup_USART(int rx, int tx) {
 	USART_InitTypeDef usartStructure;
 	NVIC_InitTypeDef nvicStructure;
 	
-	int pins[2] = {pow(2,rx),pow(2,tx)};
+	int pins[2] = {(int)pow(2,rx),(int)pow(2,tx)};
 	// Enable the periph clock for usart1
 	RCC_APB1PeriphClockCmd(RCC_APB1Periph_USART2, ENABLE);
 	// Enable the GPIOA clock
@@ -87,7 +92,7 @@ void usart::usart_puts(USART_TypeDef *USARTx, volatile char *str) {
 }
 //MARK: read usart input
 #define MAX_WORDLEN		255
-volatile char receivedStr[MAX_WORDLEN + 1];
+volatile char buffer[MAX_WORDLEN + 1];
 volatile bool newDataIn = false;
 extern void usart_puts(USART_TypeDef *USARTx, char *str);
 // Interrupt request handler for all usart2 interrupts
@@ -98,20 +103,44 @@ void USART2_IRQHandler(){
 		static int count = 0;
 		char ch = USART2->DR;
 		if((ch != '\n') && (count < MAX_WORDLEN)){
-			receivedStr[count++] = ch;
+			buffer[count++] = ch;
 		} else {
-			receivedStr[count] = '\n';
+			buffer[count] = '\n';
 			count = 0;
 			newDataIn = true;
-			usart_puts(USART2, receivedStr);
+//			usart_puts(USART2, receivedStr);
 		}
 	}
 	
 }
-// return volatile.. http://stackoverflow.com/questions/24515505/assignment-discards-volatile-qualifier-from-pointer-target-type
-volatile char* usart::readUsart() {
+
+
+string receivedStr;
+
+
+char* usart::read() {
 	newDataIn = false;
-	char ret[MAX_WORDLEN];
-//	strncpy(ret, receivedStr, strlen(receivedStr));
-	return receivedStr;
+	int size;
+	REP(MAX_WORDLEN){
+		++size;
+		if(buffer[i] == '\n') break;
+	}
+	receivedStr[0] = 'a';
+	char* ret = (char*)malloc(size * sizeof(char)); // allocate just enough space
+	if(!ret) return NULL;
+	
+	REP(size) ret[i] = buffer[i]; // copy received volatile string to 'ret'
+	return ret;
 }
+
+
+
+
+
+
+
+
+
+
+
+
