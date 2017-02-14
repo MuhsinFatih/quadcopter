@@ -1,10 +1,8 @@
 
 #include "main.hpp"
+#include <stm32f4xx.h>
 #define read(idr,pin) (idr & pin)
 #define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
-#define setup() main()
-
-void loop();
 
 static char msg[255];
 
@@ -12,7 +10,7 @@ static char msg[255];
 // microsecond resolution
 void setSysTick() {
 	if (SysTick_Config(SystemCoreClock / 1000000)) {
-		//usart_puts(USART2, "error in setSysTick()");
+//		usart_puts(USART2, "error in setSysTick()");
 	}
 }
 void enableSysTick() {
@@ -230,7 +228,7 @@ uint16_t getPeriod(double realPeriod, double frequency, uint32_t clockSpeed , ui
 }
 
 // setup
-int main() {
+void setup() {
 	
 	enableFloatingPoint();
 	setSysTick();
@@ -247,14 +245,12 @@ int main() {
 	gpio(GPIOD, (pin12 | pin13 | pin14 | pin15) , OUTPUT, NOPULL);
 	gpio(GPIOA, pin0, INPUT, GPIO_PuPd_DOWN);
 	
-	GPIO_SetBits(GPIOD, pin12); // indicate stm's working fine
+	GPIO_SetBits(GPIOD, pin14); // indicate stm's working fine
 	//	GPIO_SetBits(GPIOD, pin14);
 	
 	//	usart_puts(USART2, "hello world!\n");
 	startAsyncStopwatch();
-	
-	while(true) loop();
-	return 0;
+
 }
 
 uint16_t prescaler = 8400;

@@ -1,6 +1,6 @@
 #include "stm32f4xx_it.h"
 #include "stm32f4xx_conf.h"
-#include "def.h"
+
 /**
   * @brief   This function handles NMI exception.
   * @param  None

@@ -4,7 +4,7 @@
 #include <stdbool.h>
 #include <math.h>
 #include <stdlib.h>
-#include <stm32f4xx.h>
+
 #include <cstring>
 
 //#include "usart.hpp"
@@ -40,13 +40,13 @@
 #define pin15		GPIO_Pin_15  /* Pin 15 selected */
 #define pinAll		GPIO_Pin_All  /* All pins selected */
 
-
 #ifdef __cplusplus
 
 
 extern "C" {
 #endif
-	int main();
+	void setup();
+	void loop();
 #ifdef __cplusplus
 }
 #endif
