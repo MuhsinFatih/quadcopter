@@ -16,18 +16,26 @@
 #include <math.h>
 #include <stdarg.h>
 #include <string>
+#include <vector>
 
 class usart {
 private:
 	
 	USART_TypeDef USARTx;
+	GPIO_TypeDef *GPIOx;
 	int rx, tx;
 	void setup_USART(int rx, int tx);
 	void usart_puts(USART_TypeDef *USARTx, volatile char *str);
 	
 public:
-	usart(USART_TypeDef *USARTx, int rx, int tx);
+	usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx);
 	void printf(const char *, ...);
+
+	/**
+	 read from usart
+	 DON'T FORGET TO DEALLOCATE!!
+	 @return pointer to dynamically allocated char array
+	 */
 	char* read();
 };
 

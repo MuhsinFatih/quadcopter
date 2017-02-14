@@ -7,7 +7,7 @@
 #include <stm32f4xx.h>
 #include <cstring>
 
-#include "usart.hpp"
+//#include "usart.hpp"
 
 
 #define OUTPUT	GPIO_Mode_OUT

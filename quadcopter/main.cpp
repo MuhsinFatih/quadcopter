@@ -230,7 +230,7 @@ uint16_t getPeriod(double realPeriod, double frequency, uint32_t clockSpeed , ui
 }
 
 // setup
-int setup() {
+int main() {
 	
 	enableFloatingPoint();
 	setSysTick();
@@ -301,8 +301,8 @@ void loop() {
 	////		TIM4->CCR1 = atoi(readUsart());
 	//		TIM4->CCR2 = atoi(readUsart());
 	//	}
-	usart usrt(USART2, 6, 7);
-//	usrt.printf(<#const char *, ...#>)
+//	usart usart2(USART2, GPIOA, 6, 7);
+//	usart2.printf("asdf");
 	
 }
 

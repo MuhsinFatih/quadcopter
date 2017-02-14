@@ -11,10 +11,12 @@
 using namespace std;
 
 USART_TypeDef *USARTx;
+GPIO_TypeDef *GPIOx;
 int rx, tx;
 
-usart::usart(USART_TypeDef *USARTx, int rx, int tx) {
+usart::usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx) {
 	this->USARTx = *USARTx; // not sure if this is safe
+	this->GPIOx = GPIOx; // not sure if this is safe
 	setup_USART(rx, tx);
 }
 
@@ -93,6 +95,7 @@ void usart::usart_puts(USART_TypeDef *USARTx, volatile char *str) {
 //MARK: read usart input
 #define MAX_WORDLEN		255
 volatile char buffer[MAX_WORDLEN + 1];
+char receivedString[MAX_WORDLEN + 1];
 volatile bool newDataIn = false;
 extern void usart_puts(USART_TypeDef *USARTx, char *str);
 // Interrupt request handler for all usart2 interrupts
@@ -107,25 +110,30 @@ void USART2_IRQHandler(){
 		} else {
 			buffer[count] = '\n';
 			count = 0;
+			REP(MAX_WORDLEN){
+				receivedString[i] = buffer[i];
+			}
 			newDataIn = true;
 //			usart_puts(USART2, receivedStr);
 		}
-	}
+	}\
 	
 }
 
+void * __dso_handle; // workaround
+//string receivedStr;
 
-string receivedStr;
+char readString[MAX_WORDLEN + 1];
 
-
+// DONT FORGET TO DEALLOCATE AFTER READING!!
 char* usart::read() {
 	newDataIn = false;
-	int size;
+	int size = 0;
 	REP(MAX_WORDLEN){
 		++size;
 		if(buffer[i] == '\n') break;
 	}
-	receivedStr[0] = 'a';
+	
 	char* ret = (char*)malloc(size * sizeof(char)); // allocate just enough space
 	if(!ret) return NULL;
 	
