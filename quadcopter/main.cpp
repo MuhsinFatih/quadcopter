@@ -4,69 +4,9 @@
 #define read(idr,pin) (idr & pin)
 #define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
 
+using namespace std;
+
 static char msg[255];
-
-// MARK: timer
-// microsecond resolution
-void setSysTick() {
-	if (SysTick_Config(SystemCoreClock / 1000000)) {
-//		usart_puts(USART2, "error in setSysTick()");
-	}
-}
-void enableSysTick() {
-	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk; // enable
-}
-void disableSysTick() {
-	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk; // disable
-}
-volatile uint32_t ticks;
-static bool asyncTimerOn = false;
-void SysTick_Handler() {
-	++ticks;
-}
-
-// MARK: delay
-static void delay(__IO uint32_t milliseconds) { // millisecond
-	uint32_t microseconds = 0;
-	if(!asyncTimerOn) ticks = 0; // make sure we don't run out of 32 bits at random times
-	else microseconds += ticks;
-	enableSysTick(); // start as soon as possible
-	microseconds += milliseconds * 1000; //clarity
-	while (ticks < microseconds);
-	disableSysTick();
-}
-static void delay_micro(__IO uint32_t microseconds) {
-	if(!asyncTimerOn) ticks = 0; // make sure we don't run out of 32 bits at random times
-	else microseconds += ticks;
-	enableSysTick(); // start as soon as possible
-	while (ticks < microseconds);
-	disableSysTick();
-}
-
-
-// timer is at microseconds resolution. enum values can be used to multiply with ticks to get human readable results
-typedef enum timeinterval{
-	microseconds = 1, milliseconds = 1000, seconds = 1000000
-} timeinterval;
-
-// MARK: async stopwatch
-// aslında daha iyi bir fikrim var: startAsyncTimer a her sayaç için özel elapsedTime değişkeni yapalım, startAsyncTimer fonksiyonuda bu değişkenlerin
-// hepsinin pointer ını depolasın ve yeni timer gelince bütün timerların elapsedTime'ları geçen süre kadar artırılsın. Tabi bu iş için C++ la compile
-// etmeyi halledersem çok güzel olur :)
-static uint32_t startAsyncStopwatch() {
-	if (asyncTimerOn) return ticks; // if timer is already on then abstractly another timer is working. Don't reset that timer
-	asyncTimerOn = true;
-	ticks = 0;
-	enableSysTick();
-	return 0; // 0 elapsed
-}
-#define stopAsyncTimer disableSysTick();
-static uint32_t elapsedTime(uint32_t offset, timeinterval interval){
-	int ret = floor(ticks / interval);
-	//	sprintf(msg, "%u ticks %i interval %i ticks/interval %u offset\n", ticks, interval, ret, offset);
-	//	usart_puts(USART2, msg);
-	return ret - offset;
-}
 
 
 void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_TypeDef PuPd) {
@@ -86,7 +26,8 @@ void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_Typ
 int btnOffset = 0;
 int btnElapsed = 0;
 void EXTI0_IRQHandler() {
-	btnElapsed = elapsedTime(0, milliseconds);
+	timer tmr = timer();
+//	btnElapsed = elapsedTime(0, milliseconds);
 	
 	if (EXTI_GetITStatus(EXTI_Line0) && btnElapsed - btnOffset > 300) {
 		btnOffset = btnElapsed;
@@ -229,7 +170,7 @@ uint16_t getPeriod(double realPeriod, double frequency, uint32_t clockSpeed , ui
 
 // setup
 void setup() {
-	
+	enableSysTick();
 	enableFloatingPoint();
 	setSysTick();
 	setup_button();
@@ -245,7 +186,7 @@ void setup() {
 	gpio(GPIOD, (pin12 | pin13 | pin14 | pin15) , OUTPUT, NOPULL);
 	gpio(GPIOA, pin0, INPUT, GPIO_PuPd_DOWN);
 	
-	GPIO_SetBits(GPIOD, pin14); // indicate stm's working fine
+	GPIO_SetBits(GPIOD, pin12); // indicate stm's working fine
 	//	GPIO_SetBits(GPIOD, pin14);
 	
 	//	usart_puts(USART2, "hello world!\n");
@@ -260,11 +201,11 @@ bool buttonReleased = true;
 uint32_t offset = 0;
 uint32_t elapsed = 0;
 void loop() {
-	int elapsed = elapsedTime(offset, microseconds);
-	offset = elapsed;
-	if( elapsed > 1000000){
-		GPIO_ToggleBits(GPIOD, pin15);
-	}
+//	int elapsed = elapsedTime(offset, microseconds);
+//	offset = elapsed;
+//	if( elapsed > 1000000){
+//		GPIO_ToggleBits(GPIOD, pin15);
+//	}
 	
 	//	elapsed = elapsedTime(0, seconds);
 	////	msg[0] = '\0';

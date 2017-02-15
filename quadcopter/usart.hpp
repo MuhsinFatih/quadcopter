@@ -12,7 +12,6 @@
 #include <stdio.h>
 #include <stm32f4xx.h>
 #include <stdbool.h>
-#include "main.hpp"
 #include <math.h>
 #include <stdarg.h>
 #include <string>
