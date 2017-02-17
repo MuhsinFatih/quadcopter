@@ -26,7 +26,7 @@ void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_Typ
 int btnOffset = 0;
 int btnElapsed = 0;
 void EXTI0_IRQHandler() {
-	timer tmr = timer();
+//	timer tmr = timer();
 //	btnElapsed = elapsedTime(0, milliseconds);
 	
 	if (EXTI_GetITStatus(EXTI_Line0) && btnElapsed - btnOffset > 300) {
@@ -64,7 +64,7 @@ void setup_button() {
 	nvicStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvicStructure);
 	
-	startAsyncStopwatch();
+//	startAsyncStopwatch();
 	
 	
 }
@@ -168,9 +168,9 @@ uint16_t getPeriod(double realPeriod, double frequency, uint32_t clockSpeed , ui
 	return period;
 }
 
-// setup
+timer timer1 = timer();
+
 void setup() {
-	enableSysTick();
 	enableFloatingPoint();
 	setSysTick();
 	setup_button();
@@ -190,8 +190,11 @@ void setup() {
 	//	GPIO_SetBits(GPIOD, pin14);
 	
 	//	usart_puts(USART2, "hello world!\n");
-	startAsyncStopwatch();
-
+//	startAsyncTimer();
+	
+	timer1.start();
+	
+	
 }
 
 uint16_t prescaler = 8400;
@@ -201,6 +204,10 @@ bool buttonReleased = true;
 uint32_t offset = 0;
 uint32_t elapsed = 0;
 void loop() {
+	if (timer1.elapsedTime(milliseconds) > 1000) {
+		timer1.start();
+		GPIO_ToggleBits(GPIOD, pin13);
+	}
 //	int elapsed = elapsedTime(offset, microseconds);
 //	offset = elapsed;
 //	if( elapsed > 1000000){

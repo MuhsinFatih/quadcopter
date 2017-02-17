@@ -1,10 +1,3 @@
-//
-//  usart.cpp
-//  quadcopter
-//
-//  Created by Muhsin Fatih Yorulmaz on 11/02/2017.
-//  Copyright © 2017 mekatrotekno. All rights reserved.
-//
 
 #include "usart.hpp"
 

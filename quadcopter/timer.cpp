@@ -1,25 +1,16 @@
-//
-//  timer.cpp
-//  quadcopter
-//
-//  Created by Muhsin Fatih Yorulmaz on 15/02/2017.
-//  Copyright © 2017 mekatrotekno. All rights reserved.
-//
 
 #include "timer.hpp"
-
+using namespace std;
+// MARK: - global variables 
+bool asyncTimerOn = false;
 volatile uint32_t ticks;
-static bool asyncTimerOn = false;
-uint32_t offset = 0;
-timer::timer(){
-	if(asyncTimerOn)
-		offset = ticks;
-}
+
+//vector<timer> openTimers;
 
 // microsecond resolution
-static void setSysTick() {
+void setSysTick() {
 	if (SysTick_Config(SystemCoreClock / 1000000)) {
-		//		usart_puts(USART2, "error in setSysTick()");
+//		usart_puts(USART2, "error in setSysTick()");
 	}
 }
 void enableSysTick() {
@@ -28,36 +19,42 @@ void enableSysTick() {
 void disableSysTick() {
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk; // disable
 }
-void SysTick_Handler() {
-	++ticks;
+extern "C" {
+	void SysTick_Handler() {
+		++ticks;
+	}
 }
 
 // MARK: delay
-static void delay(__IO uint32_t milliseconds) { // millisecond
-	uint32_t microseconds = 0;
-	if(!asyncTimerOn) ticks = 0; // make sure we don't run out of 32 bits at random times
-	else microseconds += ticks;
+void delay(__IO uint32_t milliseconds) { // millisecond
+	uint32_t microseconds = ticks;
 	enableSysTick(); // start as soon as possible
 	microseconds += milliseconds * 1000; //clarity
 	while (ticks < microseconds);
 	disableSysTick();
 }
-static void delay_micro(__IO uint32_t microseconds) {
-	if(!asyncTimerOn) ticks = 0; // make sure we don't run out of 32 bits at random times
-	else microseconds += ticks;
+void delay_micro(__IO uint32_t microseconds) {
+	microseconds += ticks;
 	enableSysTick(); // start as soon as possible
 	while (ticks < microseconds);
 	disableSysTick();
 }
 
+timer::timer(){
+	if(asyncTimerOn) offset = ticks;
+}
+
 // MARK: async stopwatch
-void timer::startAsyncStopwatch() {
-	if (asyncTimerOn) offset = ticks; // if timer is already on then abstractly another timer is working. Don't reset that timer
+void timer::start() {
+	if (asyncTimerOn) this->offset = ticks; // if timer is already on then abstractly another timer is working. Don't reset that timer
 	asyncTimerOn = true;
 	ticks = 0;
 	enableSysTick();
 }
-static void stopAsyncTimer(){ disableSysTick();}
+
+void timer::stop() {
+}
+void stopAsyncTimer(){ disableSysTick();}
 
 uint32_t timer::elapsedTime(timeinterval interval){
 	int ret = floor(ticks / interval);

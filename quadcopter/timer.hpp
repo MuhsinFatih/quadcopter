@@ -1,10 +1,3 @@
-//
-//  timer.hpp
-//  quadcopter
-//
-//  Created by Muhsin Fatih Yorulmaz on 15/02/2017.
-//  Copyright © 2017 mekatrotekno. All rights reserved.
-//
 
 #ifndef timer_hpp
 #define timer_hpp
@@ -13,35 +6,48 @@
 #include <stm32f4xx.h>
 #include <stdbool.h>
 #include <math.h>
-
+#include <vector>
 
 // timer is at microseconds resolution. enum values can be used to multiply with ticks to get human readable results
 typedef enum timeinterval{
 	microseconds = 1, milliseconds = 1000, seconds = 1000000
 } timeinterval;
 
+
 class timer {
-	static int blabla;
 private:
-	
-	
+	uint32_t offset = 0;
 	
 public:
 	timer();
-	uint32_t elapsedtime(timeinterval interval);
-	void startAsyncStopwatch();
-	
+	uint32_t elapsedTime(timeinterval interval);
+	void start();
+	/**
+	 Doesnt do anything at all. a timer does not actually count. all timers have an offset and use same counter to get elapsed time
+	 */
+	void stop();
 };
 
 
+void startAsyncTimer();
+void stopAsyncTimer();
 
-static void stopAsyncTimer();
+/**
+ busy wait milliseconds
+ */
+void delay(__IO uint32_t milliseconds);
 
-static void delay(__IO uint32_t milliseconds);
-static void delay_micro(__IO uint32_t microseconds);
+/**
+ buys wait microseconds
+ */
+void delay_micro(__IO uint32_t microseconds);
 
+
+/**
+ set systick to microsecond resolution and enable
+ */
+void setSysTick();
 void enableSysTick();
 void disableSysTick();
-static void setSysTick();
 
 #endif /* timer_hpp */
