@@ -3,35 +3,10 @@
 
 using namespace std;
 
-USART_TypeDef *USARTx;
-GPIO_TypeDef *GPIOx;
-int rx, tx;
-
-usart::usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx) {
-	this->USARTx = *USARTx; // not sure if this is safe
-	this->GPIOx = GPIOx; // not sure if this is safe
-	setup_USART(rx, tx);
-}
-
-void usart::printf(const char *format, ...) {
-	const int size = 512;
-	// following lines are c magic
-	char buffer[size];
-	va_list args;
-	va_start (args, format);
-	vsnprintf (buffer,size,format, args);
-	perror (buffer);
-	va_end (args);
-	usart_puts(&USARTx, buffer);
-}
-
-//volatile char* read(){
-//	return null;
-//}
 
 // MARK: usart setup
 //FIXME: fix rx, tx params. currently stm picks one magically for rx and tx
-void usart::setup_USART(int rx, int tx) {
+void usart::setup_USART() {
 	GPIO_InitTypeDef gpioStructure;
 	USART_InitTypeDef usartStructure;
 	NVIC_InitTypeDef nvicStructure;
@@ -51,10 +26,11 @@ void usart::setup_USART(int rx, int tx) {
 	
 	GPIO_Init(GPIOA, &gpioStructure);
 	
-	GPIO_PinAFConfig(GPIOA, rx, GPIO_AF_USART2);
-	GPIO_PinAFConfig(GPIOA, tx, GPIO_AF_USART2);
+	GPIO_PinAFConfig(GPIOA, this->rx, GPIO_AF_USART2);
+	GPIO_PinAFConfig(GPIOA, this->tx, GPIO_AF_USART2);
 	
-	usartStructure.USART_BaudRate = BAUDRATE;
+	
+	usartStructure.USART_BaudRate = this->baudrate;
 	usartStructure.USART_WordLength = USART_WordLength_8b;
 	usartStructure.USART_StopBits = USART_StopBits_1;
 	usartStructure.USART_Parity = USART_Parity_No;
@@ -76,15 +52,46 @@ void usart::setup_USART(int rx, int tx) {
 	
 	
 }
-void usart::usart_puts(USART_TypeDef *USARTx, volatile char *str) {
-	while(*str) {
-		//		while(!(USARTx->SR & 0x040)); // get 6'th bit
-		// get the TC (transmission complete) flag
-		while(!USART_GetFlagStatus(USART2, USART_FLAG_TC));
+
+usart::usart(){
+	
+}
+usart::usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx, int baudrate) {
+	this->USARTx = USARTx; // not sure if this is safe
+	this->GPIOx = GPIOx; // not sure if this is safe
+	this->rx = rx;
+	this->tx = tx;
+	this->baudrate = baudrate;
+	setup_USART();
+}
+
+void usart::printf(const char *format, ...) {
+	const int size = 512;
+	// following lines are c magic
+	char buffer[size];
+	va_list args;
+	va_start (args, format);
+	vsnprintf (buffer,size,format, args);
+	perror (buffer);
+	va_end (args);
+	usart_puts(this->USARTx, buffer);
+}
+
+//volatile char* read(){
+//	return null;
+//}
+
+
+void usart::usart_puts(USART_TypeDef *USARTx, const char *str){
+	while(*str){
+		// Wait for the TC (Transmission Complete) Flag to be set
+		// while(!(USARTx->SR & 0x040));
+		while(USART_GetFlagStatus(USART2, USART_FLAG_TC) == RESET);
 		USART_SendData(USARTx, *str);
 		*str++;
 	}
 }
+
 //MARK: read usart input
 #define MAX_WORDLEN		255
 volatile char buffer[MAX_WORDLEN + 1];
@@ -93,6 +100,7 @@ volatile bool newDataIn = false;
 extern void usart_puts(USART_TypeDef *USARTx, char *str);
 // Interrupt request handler for all usart2 interrupts
 // This interrupt handler will be executed each time a char is received in usart2
+extern "C" {
 void USART2_IRQHandler(){
 	// make sure it was usart2 and we didnt screw up things
 	if(USART_GetITStatus(USART2, USART_IT_RXNE)){
@@ -112,7 +120,7 @@ void USART2_IRQHandler(){
 	}\
 	
 }
-
+}
 void * __dso_handle; // workaround
 //string receivedStr;
 

@@ -169,12 +169,12 @@ uint16_t getPeriod(double realPeriod, double frequency, uint32_t clockSpeed , ui
 }
 
 timer timer1 = timer();
-
+usart usart1 = usart();
 void setup() {
 	enableFloatingPoint();
 	setSysTick();
 	setup_button();
-	int pwmpins[] = {6,7};
+	int pwmpins[] = {2,3};
 	// enable GPIOx clock
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOD, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
@@ -193,8 +193,7 @@ void setup() {
 //	startAsyncTimer();
 	
 	timer1.start();
-	
-	
+	usart1 = usart(USART2, GPIOA, 2,3, 230400);
 }
 
 uint16_t prescaler = 8400;
@@ -206,7 +205,9 @@ uint32_t elapsed = 0;
 void loop() {
 	if (timer1.elapsedTime(milliseconds) > 1000) {
 		timer1.start();
+		usart1.printf("led toggle\n");
 		GPIO_ToggleBits(GPIOD, pin13);
+//		usart1.printf("hello%i", 5);
 	}
 //	int elapsed = elapsedTime(offset, microseconds);
 //	offset = elapsed;

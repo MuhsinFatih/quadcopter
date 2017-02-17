@@ -2,8 +2,6 @@
 SHELL:=/bin/bash
 
 
-BAUDRATE = 115200
-
 OUTPATH = $(abspath $(BUILD_DIR))
 BASEDIR = $(abspath ./)
 

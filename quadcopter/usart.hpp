@@ -13,14 +13,16 @@
 class usart {
 private:
 	
-	USART_TypeDef USARTx;
+	USART_TypeDef *USARTx;
 	GPIO_TypeDef *GPIOx;
 	int rx, tx;
-	void setup_USART(int rx, int tx);
-	void usart_puts(USART_TypeDef *USARTx, volatile char *str);
+	int baudrate;
+	void setup_USART();
+	void usart_puts(USART_TypeDef *USARTx, const char *str);
 	
 public:
-	usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx);
+	usart();
+	usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx, int baudrate);
 	void printf(const char *, ...);
 
 	/**

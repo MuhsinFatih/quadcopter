@@ -5,8 +5,8 @@
 #include <math.h>
 #include <stdlib.h>
 #include "timer.hpp"
+#include "usart.hpp"
 #include <cstring>
-
 //#include "usart.hpp"
 
 
@@ -18,9 +18,6 @@
 #define REP(size) for(size_t i=0, length=size; i<length; ++i)
 #define REPW(size)  size_t w,length; length=size; while(w<length)
 
-#ifndef BAUDRATE
-#define BAUDRATE 230400
-#endif
 
 #define pin0		GPIO_Pin_0  /* Pin 0 selected */
 #define pin1		GPIO_Pin_1  /* Pin 1 selected */

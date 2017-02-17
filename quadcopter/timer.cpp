@@ -1,9 +1,11 @@
 
 #include "timer.hpp"
 using namespace std;
-// MARK: - global variables 
-bool asyncTimerOn = false;
-volatile uint32_t ticks;
+
+
+// MARK: - global variables
+volatile uint32_t ticks = 0;
+volatile bool isTimerOn = false;
 
 //vector<timer> openTimers;
 
@@ -14,12 +16,15 @@ void setSysTick() {
 	}
 }
 void enableSysTick() {
+	isTimerOn = true;
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_TICKINT_Msk | SysTick_CTRL_ENABLE_Msk; // enable
 }
 void disableSysTick() {
+	isTimerOn = false;
 	SysTick->CTRL = SysTick_CTRL_CLKSOURCE_Msk | SysTick_CTRL_ENABLE_Msk; // disable
 }
 extern "C" {
+	//TODO: implement guard for uint32 overflow
 	void SysTick_Handler() {
 		++ticks;
 	}
@@ -41,24 +46,21 @@ void delay_micro(__IO uint32_t microseconds) {
 }
 
 timer::timer(){
-	if(asyncTimerOn) offset = ticks;
+	offset = ticks;
 }
 
 // MARK: async stopwatch
 void timer::start() {
-	if (asyncTimerOn) this->offset = ticks; // if timer is already on then abstractly another timer is working. Don't reset that timer
-	asyncTimerOn = true;
-	ticks = 0;
-	enableSysTick();
+	this->offset = ticks;
+	if(!isTimerOn) enableSysTick();
 }
 
 void timer::stop() {
 }
-void stopAsyncTimer(){ disableSysTick();}
 
 uint32_t timer::elapsedTime(timeinterval interval){
-	int ret = floor(ticks / interval);
+	int ret = floor((ticks - offset) / interval);
 	//	sprintf(msg, "%u ticks %i interval %i ticks/interval %u offset\n", ticks, interval, ret, offset);
 	//	usart_puts(USART2, msg);
-	return ret - offset;
+	return ret;
 }

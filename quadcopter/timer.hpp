@@ -29,8 +29,6 @@ public:
 };
 
 
-void startAsyncTimer();
-void stopAsyncTimer();
 
 /**
  busy wait milliseconds
