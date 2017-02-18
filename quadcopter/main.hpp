@@ -4,10 +4,12 @@
 #include <stdbool.h>
 #include <math.h>
 #include <stdlib.h>
+#include <cstring>
+#include <stm32f4xx.h>
 #include "timer.hpp"
 #include "usart.hpp"
-#include <cstring>
-//#include "usart.hpp"
+#include "gpio.hpp"
+#include "pwm.hpp"
 
 
 #define OUTPUT	GPIO_Mode_OUT

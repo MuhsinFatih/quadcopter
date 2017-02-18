@@ -47,5 +47,4 @@ void delay_micro(__IO uint32_t microseconds);
 void setSysTick();
 void enableSysTick();
 void disableSysTick();
-
 #endif /* timer_hpp */

@@ -1,25 +1,10 @@
 
 #include "main.hpp"
-#include <stm32f4xx.h>
+
 #define read(idr,pin) (idr & pin)
 #define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
 
 using namespace std;
-
-static char msg[255];
-
-
-void gpio(GPIO_TypeDef* GPIOx, uint32_t pin, GPIOMode_TypeDef mode, GPIOPuPd_TypeDef PuPd) {
-	GPIO_InitTypeDef initStructure;
-	
-	initStructure.GPIO_Pin = pin;
-	initStructure.GPIO_Mode = mode;
-	initStructure.GPIO_OType = GPIO_OType_PP;
-	initStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	initStructure.GPIO_PuPd = PuPd;
-	GPIO_Init(GPIOx, &initStructure);
-}
-
 
 
 // MARK: button click with interrupt
@@ -82,94 +67,10 @@ const char *byte_to_binary(int x)
 	
 	return b;
 }
-/**
- setup pwm
- 
- @param pins numbers. not pinx notation. eg: {1,2,3,4}
- @param numOfPins size of the pins array
- */
-void setupPWM(GPIO_TypeDef *GPIOx, int *pins, int numOfPins) {
-	GPIO_InitTypeDef			gpioStructure;
-	TIM_TimeBaseInitTypeDef		timeBaseStructure;
-	TIM_OCInitTypeDef			outputControlStrucure;
-	
-	// enable timer 4
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_TIM4, ENABLE);
-	
-	char asdf[50];
-	uint32_t gpioPins = 0;
-	REP(numOfPins){
-		gpioPins |= (uint32_t)pow(2,pins[i]);
-		sprintf(asdf,"gpioPins= %s\n", byte_to_binary(gpioPins));
-		//		usart_puts(USART2,asdf);
-	}
-	
-	gpioStructure.GPIO_Pin = gpioPins;
-	gpioStructure.GPIO_Mode = GPIO_Mode_AF;
-	gpioStructure.GPIO_Speed = GPIO_Speed_100MHz;
-	gpioStructure.GPIO_OType = GPIO_OType_PP;
-	gpioStructure.GPIO_PuPd = GPIO_PuPd_UP;
-	GPIO_Init(GPIOx, &gpioStructure);
-	
-	
-	// assign alternate function
-	GPIO_PinAFConfig(GPIOx, GPIO_PinSource6, GPIO_AF_TIM4);
-	GPIO_PinAFConfig(GPIOx, GPIO_PinSource7, GPIO_AF_TIM4);
-	
-	
-	uint16_t prescaler = (uint16_t)84;
-	
-	timeBaseStructure.TIM_Period		= 19999;
-	timeBaseStructure.TIM_Prescaler		= prescaler;
-	timeBaseStructure.TIM_ClockDivision	= 0;
-	timeBaseStructure.TIM_CounterMode	= TIM_CounterMode_Up;	// count 0 -> cnt
-	
-	TIM_TimeBaseInit(TIM4, &timeBaseStructure);
-	
-	// common timer settings
-	// pwm mode 1: set on compare match
-	// pwm mode 2: clear on compare match
-	outputControlStrucure.TIM_OCMode		= TIM_OCMode_PWM1;
-	outputControlStrucure.TIM_OutputState	= TIM_OutputState_Enable;
-	outputControlStrucure.TIM_Pulse			= 0;
-	outputControlStrucure.TIM_OCPolarity	= TIM_OCPolarity_High;
-	
-	TIM_OC1Init(TIM4, &outputControlStrucure);
-	TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
-	
-	TIM_OC2Init(TIM4, &outputControlStrucure);
-	TIM_OC2PreloadConfig(TIM4, TIM_OCPreload_Enable);
-	
-	TIM_ARRPreloadConfig(TIM4, ENABLE);
-	
-	TIM_Cmd(TIM4, ENABLE);
-	
-	
-	
-	
-}
-
-/**
- * @brief  friendly function to get the period value to pass to timers
- * @param  realPeriod: period in means of real life measurements. like 1 is actually 1 second
- * @param  frequency: 1/realPeriod obviously. If you want to use this then set realPeriod to 0. or set this to 0 likewise
- * @retval period value to pass into your timer
- */
-uint16_t getPeriod(double realPeriod, double frequency, uint32_t clockSpeed , uint16_t prescaler) {
-	uint16_t period;
-	
-	if(frequency == 0) {
-		period = realPeriod * clockSpeed / prescaler;
-	} else if(realPeriod == 0) {
-		period = clockSpeed / (prescaler * frequency);
-	} else {
-		// throw error
-	}
-	return period;
-}
 
 timer timer1 = timer();
 usart usart1 = usart();
+pwm pwm1 = pwm();
 void setup() {
 	enableFloatingPoint();
 	setSysTick();
@@ -180,8 +81,7 @@ void setup() {
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOA, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 	
-	//	setup_USART(2,3);
-	setupPWM(GPIOB, pwmpins, 2);
+//	pwm pwm1 = pwm();
 	
 	gpio(GPIOD, (pin12 | pin13 | pin14 | pin15) , OUTPUT, NOPULL);
 	gpio(GPIOA, pin0, INPUT, GPIO_PuPd_DOWN);
@@ -194,6 +94,9 @@ void setup() {
 	
 	timer1.start();
 	usart1 = usart(USART2, GPIOA, 2,3, 230400);
+	usart1.begin();
+	pwm1 = pwm(GPIOB, 6);
+	pwm1.write();
 }
 
 uint16_t prescaler = 8400;
@@ -202,10 +105,11 @@ double frequency = 50;
 bool buttonReleased = true;
 uint32_t offset = 0;
 uint32_t elapsed = 0;
+int a = 0;
 void loop() {
 	if (timer1.elapsedTime(milliseconds) > 1000) {
 		timer1.start();
-		usart1.printf("led toggle\n");
+		usart1.printf("led toggle %i\n", a++);
 		GPIO_ToggleBits(GPIOD, pin13);
 //		usart1.printf("hello%i", 5);
 	}

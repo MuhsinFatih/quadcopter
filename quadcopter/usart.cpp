@@ -47,15 +47,17 @@ void usart::setup_USART() {
 	nvicStructure.NVIC_IRQChannelSubPriority = 0;
 	nvicStructure.NVIC_IRQChannelCmd = ENABLE;
 	NVIC_Init(&nvicStructure);
-	
-	USART_Cmd(USART2, ENABLE);
-	
+		
 	
 }
 
 usart::usart(){
 	
 }
+void usart::begin(){
+	USART_Cmd(this->USARTx, ENABLE);
+}
+
 usart::usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx, int baudrate) {
 	this->USARTx = USARTx; // not sure if this is safe
 	this->GPIOx = GPIOx; // not sure if this is safe

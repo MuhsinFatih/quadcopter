@@ -8,6 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		4E886B481E5426200057BCE8 /* timer.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4E886B461E5426200057BCE8 /* timer.cpp */; };
+		4E88F8FE1E58A65E0010A718 /* pwm.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4E88F8FC1E58A65E0010A718 /* pwm.cpp */; };
+		4E88F9011E58AA590010A718 /* gpio.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4E88F8FF1E58AA590010A718 /* gpio.cpp */; };
 		4EC3EB8F1E4F53D600DC4DA1 /* usart.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4EC3EB8D1E4F53D600DC4DA1 /* usart.cpp */; };
 		4EF566DD1E3FC78700CDE8E4 /* CortexM4asmOps.s in Sources */ = {isa = PBXBuildFile; fileRef = 4EF566D01E3FC78700CDE8E4 /* CortexM4asmOps.s */; };
 		4EF566DE1E3FC78700CDE8E4 /* main.co in Sources */ = {isa = PBXBuildFile; fileRef = 4EF566D21E3FC78700CDE8E4 /* main.co */; };
@@ -34,6 +36,10 @@
 /* Begin PBXFileReference section */
 		4E886B461E5426200057BCE8 /* timer.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = timer.cpp; sourceTree = "<group>"; };
 		4E886B471E5426200057BCE8 /* timer.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = timer.hpp; sourceTree = "<group>"; };
+		4E88F8FC1E58A65E0010A718 /* pwm.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = pwm.cpp; sourceTree = "<group>"; };
+		4E88F8FD1E58A65E0010A718 /* pwm.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = pwm.hpp; sourceTree = "<group>"; };
+		4E88F8FF1E58AA590010A718 /* gpio.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = gpio.cpp; sourceTree = "<group>"; };
+		4E88F9001E58AA590010A718 /* gpio.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = gpio.hpp; sourceTree = "<group>"; };
 		4EC3EB8D1E4F53D600DC4DA1 /* usart.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = usart.cpp; sourceTree = "<group>"; };
 		4EC3EB8E1E4F53D600DC4DA1 /* usart.hpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = usart.hpp; sourceTree = "<group>"; };
 		4EF566C51E3FC77B00CDE8E4 /* quadcopter */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = quadcopter; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -75,6 +81,24 @@
 			name = timer;
 			sourceTree = "<group>";
 		};
+		4E88F8FB1E58A6460010A718 /* pwm */ = {
+			isa = PBXGroup;
+			children = (
+				4E88F8FC1E58A65E0010A718 /* pwm.cpp */,
+				4E88F8FD1E58A65E0010A718 /* pwm.hpp */,
+			);
+			name = pwm;
+			sourceTree = "<group>";
+		};
+		4E88F9021E58AA5F0010A718 /* gpio */ = {
+			isa = PBXGroup;
+			children = (
+				4E88F8FF1E58AA590010A718 /* gpio.cpp */,
+				4E88F9001E58AA590010A718 /* gpio.hpp */,
+			);
+			name = gpio;
+			sourceTree = "<group>";
+		};
 		4EF566BC1E3FC77B00CDE8E4 = {
 			isa = PBXGroup;
 			children = (
@@ -98,6 +122,8 @@
 				D10365C31E4F80200023E53C /* Main */,
 				D10365C21E4F80170023E53C /* Usart */,
 				4E886B491E5426250057BCE8 /* timer */,
+				4E88F8FB1E58A6460010A718 /* pwm */,
+				4E88F9021E58AA5F0010A718 /* gpio */,
 			);
 			path = quadcopter;
 			sourceTree = "<group>";
@@ -228,6 +254,8 @@
 				4EF566E31E3FC78700CDE8E4 /* system_stm32f4xx.c in Sources */,
 				4EF566DE1E3FC78700CDE8E4 /* main.co in Sources */,
 				4EC3EB8F1E4F53D600DC4DA1 /* usart.cpp in Sources */,
+				4E88F9011E58AA590010A718 /* gpio.cpp in Sources */,
+				4E88F8FE1E58A65E0010A718 /* pwm.cpp in Sources */,
 				4EF566E11E3FC78700CDE8E4 /* stm32f4_P24_definitions.s in Sources */,
 				4EF566DD1E3FC78700CDE8E4 /* CortexM4asmOps.s in Sources */,
 			);
