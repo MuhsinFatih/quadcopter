@@ -25,6 +25,8 @@ public:
 	usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx, int baudrate);
 	void printf(const char *, ...);
 	void begin();
+	bool available();
+	
 	/**
 	 read from usart
 	 DON'T FORGET TO DEALLOCATE!!

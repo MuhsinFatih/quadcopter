@@ -1,7 +1,7 @@
 
 #include "main.hpp"
 
-#define read(idr,pin) (idr & pin)
+#define readPin(idr,pin) (idr & pin)
 #define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
 
 using namespace std;
@@ -96,7 +96,8 @@ void setup() {
 	usart1 = usart(USART2, GPIOA, 2,3, 230400);
 	usart1.begin();
 	pwm1 = pwm(GPIOB, 6);
-	pwm1.write();
+	pwm pwm2 = pwm(GPIOB, 7);
+//	pwm1.write();
 }
 
 uint16_t prescaler = 8400;
@@ -105,12 +106,37 @@ double frequency = 50;
 bool buttonReleased = true;
 uint32_t offset = 0;
 uint32_t elapsed = 0;
-int a = 0;
+char *order; bool islo = true, run = false;
 void loop() {
 	if (timer1.elapsedTime(milliseconds) > 1000) {
 		timer1.start();
-		usart1.printf("led toggle %i\n", a++);
+		if(usart1.available()){
+			order = usart1.read();
+			usart1.printf("read: %s\n", order);
+			run = true;
+		}
+		if(!run) return;
+		int i = 0;
+		int lo = 0, hi = 0; bool step = false;
+		char lotext[20], hitext[20];
+		while(order[i] != '\n' && i < 50) {
+			if(order[i] == ' ') {step = true; ++i;}
+			if(!step) {
+				lotext[lo++] = order[i];
+			} else {
+				hitext[hi++] = order[i];
+			}
+			++i;
+		}
+		GPIO_SetBits(GPIOD, pin15);
+		lo = atoi(lotext);
+		hi = atoi(hitext);
+		usart1.printf("lo: %i: hi: %i islo: %s\n",lo, hi, islo);
+		usart1.printf("pwm at: %i\n", (((islo ? lo : hi) * 100) % (hi - lo) + lo));
 		GPIO_ToggleBits(GPIOD, pin13);
+		TIM4->CCR1 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
+		TIM4->CCR2 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
+		islo = !islo;
 //		usart1.printf("hello%i", 5);
 	}
 //	int elapsed = elapsedTime(offset, microseconds);

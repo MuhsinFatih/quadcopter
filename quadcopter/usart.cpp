@@ -67,16 +67,17 @@ usart::usart(USART_TypeDef *USARTx, GPIO_TypeDef *GPIOx, int rx, int tx, int bau
 	setup_USART();
 }
 
+// TODO: fix extra random characters problem
 void usart::printf(const char *format, ...) {
 	const int size = 512;
 	// following lines are c magic
-	char buffer[size];
+	char b[size];
 	va_list args;
 	va_start (args, format);
-	vsnprintf (buffer,size,format, args);
-	perror (buffer);
+	vsnprintf (b,size,format, args);
+	perror (b);
 	va_end (args);
-	usart_puts(this->USARTx, buffer);
+	usart_puts(this->USARTx, b);
 }
 
 //volatile char* read(){
@@ -117,7 +118,6 @@ void USART2_IRQHandler(){
 				receivedString[i] = buffer[i];
 			}
 			newDataIn = true;
-//			usart_puts(USART2, receivedStr);
 		}
 	}\
 	
@@ -139,11 +139,15 @@ char* usart::read() {
 	
 	char* ret = (char*)malloc(size * sizeof(char)); // allocate just enough space
 	if(!ret) return NULL;
-	
 	REP(size) ret[i] = buffer[i]; // copy received volatile string to 'ret'
 	return ret;
 }
 
+// temporary
+bool usart::available() {
+	if(newDataIn) return true;
+	return false;
+}
 
 
 
