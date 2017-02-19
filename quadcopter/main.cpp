@@ -97,6 +97,8 @@ void setup() {
 	usart1.begin();
 	pwm1 = pwm(GPIOB, 6);
 	pwm pwm2 = pwm(GPIOB, 7);
+	TIM4->CCR1 = 0;
+	TIM4->CCR2 = 0;
 //	pwm1.write();
 }
 
@@ -106,9 +108,12 @@ double frequency = 50;
 bool buttonReleased = true;
 uint32_t offset = 0;
 uint32_t elapsed = 0;
+
 char *order; bool islo = true, run = false;
+int waittime = 1500, offset = 0;
+int lo = 0, hi = 0;
 void loop() {
-	if (timer1.elapsedTime(milliseconds) > 1000) {
+	if (timer1.elapsedTime(milliseconds) > waittime) {
 		timer1.start();
 		if(usart1.available()){
 			order = usart1.read();
@@ -116,8 +121,12 @@ void loop() {
 			run = true;
 		}
 		if(!run) return;
+		
+		// for servo motor, edge pwm duty cycles are: 620 and 2400 / 20000 at 50 hz
+		
 		int i = 0;
-		int lo = 0, hi = 0; bool step = false;
+		bool step = false;
+		GPIO_SetBits(GPIOD, pin15);
 		char lotext[20], hitext[20];
 		while(order[i] != '\n' && i < 50) {
 			if(order[i] == ' ') {step = true; ++i;}
@@ -128,14 +137,26 @@ void loop() {
 			}
 			++i;
 		}
-		GPIO_SetBits(GPIOD, pin15);
-		lo = atoi(lotext);
-		hi = atoi(hitext);
-		usart1.printf("lo: %i: hi: %i islo: %s\n",lo, hi, islo);
-		usart1.printf("pwm at: %i\n", (((islo ? lo : hi) * 100) % (hi - lo) + lo));
+		
+		
+		lo = atoi(lotext) * 20;
+		if(step) {
+			hi = atoi(hitext) * 20;
+			waittime = 1500;
+		}
+		else {
+			hi = atoi(lotext) * 20;
+			waittime = 50;
+		}
+//		usart1.printf("lo: %i: hi: %i islo: %d\n",lo, hi, islo);
+		usart1.printf("%ssend between 40 and 90\npwm at: %i / 20000. ----> %i / 1000\n", (islo ? "_" : "+"), (islo ? lo : hi), (islo ? lo : hi) / 20);
+//		usart1.printf("pwm at: %i / 20000. ----> %i / 1000\n", (islo ? lo : hi), (islo ? lo : hi) / 20);
 		GPIO_ToggleBits(GPIOD, pin13);
-		TIM4->CCR1 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
-		TIM4->CCR2 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
+		
+		
+		TIM4->CCR1 = (islo ? lo : hi);
+		TIM4->CCR2 = (islo ? lo : hi);
+//		TIM4->CCR2 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
 		islo = !islo;
 //		usart1.printf("hello%i", 5);
 	}
