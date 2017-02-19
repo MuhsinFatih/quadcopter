@@ -110,8 +110,8 @@ uint32_t offset = 0;
 uint32_t elapsed = 0;
 
 char *order; bool islo = true, run = false;
-int waittime = 1500, offset = 0;
-int lo = 0, hi = 0;
+int waittime = 1500, pwmOffset = 0;
+int lo = 0, hi = 0; bool newSignal = false;
 void loop() {
 	if (timer1.elapsedTime(milliseconds) > waittime) {
 		timer1.start();
@@ -119,6 +119,9 @@ void loop() {
 			order = usart1.read();
 			usart1.printf("read: %s\n", order);
 			run = true;
+			if(lo == 0) pwmOffset = 0;
+			else
+				newSignal = true;
 		}
 		if(!run) return;
 		
@@ -126,18 +129,23 @@ void loop() {
 		
 		int i = 0;
 		bool step = false;
-		GPIO_SetBits(GPIOD, pin15);
+//		GPIO_SetBits(GPIOD, pin15);
 		char lotext[20], hitext[20];
+		int loRef = 0, hiRef = 0;
 		while(order[i] != '\n' && i < 50) {
 			if(order[i] == ' ') {step = true; ++i;}
 			if(!step) {
-				lotext[lo++] = order[i];
+				lotext[loRef++] = order[i];
 			} else {
-				hitext[hi++] = order[i];
+				hitext[hiRef++] = order[i];
 			}
 			++i;
 		}
-		
+		if(order[i-1] == '.') newSignal = false;
+		if(newSignal){
+			pwmOffset = lo - atoi(lotext) * 20;
+			newSignal = false;
+		}
 		
 		lo = atoi(lotext) * 20;
 		if(step) {
@@ -149,16 +157,21 @@ void loop() {
 			waittime = 50;
 		}
 //		usart1.printf("lo: %i: hi: %i islo: %d\n",lo, hi, islo);
-		usart1.printf("%ssend between 40 and 90\npwm at: %i / 20000. ----> %i / 1000\n", (islo ? "_" : "+"), (islo ? lo : hi), (islo ? lo : hi) / 20);
+		usart1.printf("%ssend between 40 and 90\npwm at: %i / 20000. ----> %i / 1000  pwmOffset: %i\n", (islo ? "_" : "+"), lo + pwmOffset, (lo + pwmOffset) / 20, pwmOffset);
 //		usart1.printf("pwm at: %i / 20000. ----> %i / 1000\n", (islo ? lo : hi), (islo ? lo : hi) / 20);
 		GPIO_ToggleBits(GPIOD, pin13);
 		
 		
-		TIM4->CCR1 = (islo ? lo : hi);
-		TIM4->CCR2 = (islo ? lo : hi);
+		TIM4->CCR1 = (islo ? lo : hi) + pwmOffset;
+		TIM4->CCR2 = (islo ? lo : hi) + pwmOffset;
 //		TIM4->CCR2 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
 		islo = !islo;
 //		usart1.printf("hello%i", 5);
+		
+		if(pwmOffset > 0) pwmOffset -= 10;
+		else if(pwmOffset < 0) pwmOffset += 10;
+		if(pwmOffset > -10 && pwmOffset < 10) pwmOffset = 0;
+		
 	}
 //	int elapsed = elapsedTime(offset, microseconds);
 //	offset = elapsed;
