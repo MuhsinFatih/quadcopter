@@ -24,36 +24,16 @@ pwm::pwm() {
 pwm::pwm(GPIO_TypeDef *GPIOx, int pin, volatile uint32_t *CCR){
 	this->GPIOx = GPIOx;
 	this->numOfPins = 1;
-	this->pins = new int[1]{pin};
+	this->pin = pin;
 	this->CCR = CCR;
-	setupPWM(GPIOx, this->pins, this->numOfPins);
+	setupPWM(GPIOx, new int[1]{pin}, this->numOfPins);
 }
 
 
-/**
- pwm
- 
- @param GPIOx gpio block
- @param pins array of pins. Numbers. not pinx notation. eg: {1,2,3,4}
- @param numOfPins size of the pins array
- @param CCR capture/compare register (pass it's address in! like &TIM4->CCR1) to write duty cycle. Look at datasheet to find the matching register.
- */
-pwm::pwm(GPIO_TypeDef *GPIOx, vector<int> pins, int numOfPins, volatile uint32_t *CCR){
-	this->GPIOx = GPIOx;
-	this->numOfPins = pins.size();
-	this->pins = (int*)malloc(numOfPins * sizeof(int));
-	this->CCR = CCR;
-	
-	REP(numOfPins){
-		this->pins[i] = pins[i];
-	}
-	setupPWM(GPIOx, this->pins, this->numOfPins);
-	
-}
 /**
  setup pwm
  
- @param pins numbers. not pinx notation. eg: {1,2,3,4}
+ @param pins numbers. not pinx notation. eg: {1,2,3,4}. For one pin number you can use new int[1]{5} for pin5 for example
  @param numOfPins size of the pins array
  */
 void pwm::setupPWM(GPIO_TypeDef *GPIOx, int *pins, int numOfPins) {
