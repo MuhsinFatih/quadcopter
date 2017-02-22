@@ -13,6 +13,14 @@ using namespace std;
 pwm::pwm() {
 	
 }
+
+/**
+ pwm
+ 
+ @param GPIOx gpio block
+ @param pin Number. not pinx notation. eg: 4 . not gpio_pin_4
+ @param CCR capture/compare register (pass it's address in! like &TIM4->CCR1) to write duty cycle. Look at datasheet to find the matching register.
+ */
 pwm::pwm(GPIO_TypeDef *GPIOx, int pin, volatile uint32_t *CCR){
 	this->GPIOx = GPIOx;
 	this->numOfPins = 1;

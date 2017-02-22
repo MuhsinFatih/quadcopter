@@ -19,7 +19,20 @@
 class pwm {
 private:
 	
+	double _period, _frequency;
+	uint32_t prescaler;
 public:
+	
+	double period() const { return _period; }
+	double frequency() const { return _frequency; }
+	void period(const double &period) {
+		_period = period;
+		_frequency = 0;
+	}
+	void frequency(const double &frequency) {
+		_frequency = frequency;
+		_period = 0;
+	}
 	
 	GPIO_TypeDef *GPIOx;
 	int numOfPins;
@@ -28,7 +41,6 @@ public:
 	
 	pwm();
 	pwm(GPIO_TypeDef *GPIOx, int pin, volatile uint32_t *CCR);
-	pwm(GPIO_TypeDef *GPIOx, std::vector<int> pins, int numOfPins, volatile uint32_t *CCR);
 	
 	
 	/**

@@ -170,6 +170,8 @@ void loop() {
 		
 		*pwm1.CCR = (islo ? lo : hi) + pwmOffset;
 		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
+		*pwm3.CCR = (islo ? lo : hi) + pwmOffset;
+		*pwm4.CCR = (islo ? lo : hi) + pwmOffset;
 
 //		pwm1.write((islo ? lo : hi) + pwmOffset);
 //		pwm2.write((islo ? lo : hi) + pwmOffset);
