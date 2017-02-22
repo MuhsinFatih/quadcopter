@@ -41,6 +41,7 @@ public:
 	
 	pwm();
 	pwm(GPIO_TypeDef *GPIOx, int pin, volatile uint32_t *CCR);
+	pwm(GPIO_TypeDef *GPIOx, std::vector<int> pins, int numOfPins, volatile uint32_t *CCR);
 	
 	
 	/**
