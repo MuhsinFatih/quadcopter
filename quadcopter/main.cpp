@@ -71,6 +71,10 @@ const char *byte_to_binary(int x)
 timer timer1 = timer();
 usart usart1 = usart();
 pwm pwm1 = pwm();
+pwm pwm2 = pwm();
+pwm pwm3 = pwm();
+pwm pwm4 = pwm();
+
 void setup() {
 	enableFloatingPoint();
 	setSysTick();
@@ -95,11 +99,14 @@ void setup() {
 	timer1.start();
 	usart1 = usart(USART2, GPIOA, 2,3, 230400);
 	usart1.begin();
-	pwm1 = pwm(GPIOB, 6);
-	pwm pwm2 = pwm(GPIOB, 7);
-	TIM4->CCR1 = 0;
-	TIM4->CCR2 = 0;
-//	pwm1.write();
+	pwm1 = pwm(GPIOB, 6, &TIM4->CCR1);
+	pwm2 = pwm(GPIOB, 7, &TIM4->CCR2);
+	pwm3 = pwm(GPIOB, 8, &TIM4->CCR3);
+	pwm4 = pwm(GPIOB, 9, &TIM4->CCR4);
+	pwm1.write(0);
+	pwm2.write(0);
+	pwm3.write(0);
+	pwm4.write(0);
 }
 
 uint16_t prescaler = 8400;
@@ -161,9 +168,13 @@ void loop() {
 //		usart1.printf("pwm at: %i / 20000. ----> %i / 1000\n", (islo ? lo : hi), (islo ? lo : hi) / 20);
 		GPIO_ToggleBits(GPIOD, pin13);
 		
-		
-		TIM4->CCR1 = (islo ? lo : hi) + pwmOffset;
-		TIM4->CCR2 = (islo ? lo : hi) + pwmOffset;
+//		*pwm1.CCR = (islo ? lo : hi) + pwmOffset;
+//		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
+
+		pwm1.write((islo ? lo : hi) + pwmOffset);
+		pwm2.write((islo ? lo : hi) + pwmOffset);
+//		TIM4->CCR1 = (islo ? lo : hi) + pwmOffset;
+//		TIM4->CCR2 = (islo ? lo : hi) + pwmOffset;
 //		TIM4->CCR2 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
 		islo = !islo;
 //		usart1.printf("hello%i", 5);

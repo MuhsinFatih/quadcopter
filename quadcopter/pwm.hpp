@@ -19,20 +19,23 @@
 class pwm {
 private:
 	
+public:
+	
 	GPIO_TypeDef *GPIOx;
 	int numOfPins;
 	int *pins;
-public:
+	volatile uint32_t *CCR;
+	
 	pwm();
-	pwm(GPIO_TypeDef *GPIOx, int pin);
-	pwm(GPIO_TypeDef *GPIOx, std::vector<int> pins, int numOfPins);
+	pwm(GPIO_TypeDef *GPIOx, int pin, volatile uint32_t *CCR);
+	pwm(GPIO_TypeDef *GPIOx, std::vector<int> pins, int numOfPins, volatile uint32_t *CCR);
 	
 	
 	/**
 	 setup pwm pins without creating an insance of pwm class
 	 */
 	void setupPWM(GPIO_TypeDef *GPIOx, int *pins, int numOfPins);
-	void write();
+	void write(uint32_t value);
 	
 };
 
