@@ -168,11 +168,11 @@ void loop() {
 //		usart1.printf("pwm at: %i / 20000. ----> %i / 1000\n", (islo ? lo : hi), (islo ? lo : hi) / 20);
 		GPIO_ToggleBits(GPIOD, pin13);
 		
-//		*pwm1.CCR = (islo ? lo : hi) + pwmOffset;
-//		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
+		*pwm1.CCR = (islo ? lo : hi) + pwmOffset;
+		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
 
-		pwm1.write((islo ? lo : hi) + pwmOffset);
-		pwm2.write((islo ? lo : hi) + pwmOffset);
+//		pwm1.write((islo ? lo : hi) + pwmOffset);
+//		pwm2.write((islo ? lo : hi) + pwmOffset);
 //		TIM4->CCR1 = (islo ? lo : hi) + pwmOffset;
 //		TIM4->CCR2 = (islo ? lo : hi) + pwmOffset;
 //		TIM4->CCR2 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);

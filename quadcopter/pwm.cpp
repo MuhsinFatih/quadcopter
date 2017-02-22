@@ -28,7 +28,7 @@ pwm::pwm(GPIO_TypeDef *GPIOx, int pin, volatile uint32_t *CCR){
  @param GPIOx gpio block
  @param pins array of pins. Numbers. not pinx notation. eg: {1,2,3,4}
  @param numOfPins size of the pins array
- @param CCR capture/compare register to write duty cycle. Look at datasheet to find the matching register
+ @param CCR capture/compare register (pass it's address in! like &TIM4->CCR1) to write duty cycle. Look at datasheet to find the matching register.
  */
 pwm::pwm(GPIO_TypeDef *GPIOx, vector<int> pins, int numOfPins, volatile uint32_t *CCR){
 	this->GPIOx = GPIOx;
