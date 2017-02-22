@@ -1,11 +1,3 @@
-//
-//  pwm.cpp
-//  quadcopter
-//
-//  Created by Muhsin Fatih Yorulmaz on 18/02/2017.
-//  Copyright © 2017 mekatrotekno. All rights reserved.
-//
-
 #include "pwm.hpp"
 using namespace std;
 

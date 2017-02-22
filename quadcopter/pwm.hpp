@@ -1,11 +1,3 @@
-//
-//  pwm.hpp
-//  quadcopter
-//
-//  Created by Muhsin Fatih Yorulmaz on 18/02/2017.
-//  Copyright © 2017 mekatrotekno. All rights reserved.
-//
-
 #ifndef pwm_hpp
 #define pwm_hpp
 
@@ -38,6 +30,8 @@ public:
 		_frequency = 1.0 / period;
 		_period = period;
 		_periodInTicks = period * clockSpeed / prescaler;
+		TIM4->ARR = _periodInTicks;
+		TIM4->EGR = TIM_PSCReloadMode_Immediate;
 	}
 	
 	/**
@@ -49,6 +43,8 @@ public:
 		_frequency = frequency;
 		_period = 1.0 / frequency;
 		_periodInTicks = clockSpeed / (prescaler * frequency);
+		TIM4->ARR = _periodInTicks;
+		TIM4->EGR = TIM_PSCReloadMode_Immediate;
 	}
 	
 
@@ -61,6 +57,8 @@ public:
 		_frequency = clockSpeed / (prescaler * periodInTicks);
 		_period = periodInTicks * prescaler / clockSpeed;
 		_periodInTicks = periodInTicks;
+		TIM4->ARR = periodInTicks;
+		TIM4->EGR = TIM_PSCReloadMode_Immediate;
 	}
 	
 	

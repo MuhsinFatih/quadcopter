@@ -107,6 +107,10 @@ void setup() {
 	pwm2.write(0);
 	pwm3.write(0);
 	pwm4.write(0);
+	*pwm1.CCR = 90 * 20;
+	*pwm2.CCR = 90 * 20;
+	*pwm3.CCR = 90 * 20;
+	*pwm4.CCR = 90 * 20;
 }
 
 uint16_t prescaler = 8400;
@@ -168,11 +172,13 @@ void loop() {
 //		usart1.printf("pwm at: %i / 20000. ----> %i / 1000\n", (islo ? lo : hi), (islo ? lo : hi) / 20);
 		GPIO_ToggleBits(GPIOD, pin13);
 		
-		*pwm1.CCR = (islo ? lo : hi) + pwmOffset;
-		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
-		*pwm3.CCR = (islo ? lo : hi) + pwmOffset;
-		*pwm4.CCR = (islo ? lo : hi) + pwmOffset;
-
+//		*pwm1.CCR = (islo ? lo : hi) + pwmOffset;
+//		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
+//		*pwm3.CCR = (islo ? lo : hi) + pwmOffset;
+//		*pwm4.CCR = (islo ? lo : hi) + pwmOffset;
+		
+		pwm1.frequency(lo);
+		
 //		pwm1.write((islo ? lo : hi) + pwmOffset);
 //		pwm2.write((islo ? lo : hi) + pwmOffset);
 //		TIM4->CCR1 = (islo ? lo : hi) + pwmOffset;
