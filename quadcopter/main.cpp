@@ -107,13 +107,12 @@ void setup() {
 	pwm2.write(0);
 	pwm3.write(0);
 	pwm4.write(0);
-	*pwm1.CCR = 90 * 20;
-	*pwm2.CCR = 90 * 20;
-	*pwm3.CCR = 90 * 20;
-	*pwm4.CCR = 90 * 20;
+//	*pwm1.CCR = 90 * 20;
+//	*pwm2.CCR = 90 * 20;
+//	*pwm3.CCR = 90 * 20;
+//	*pwm4.CCR = 90 * 20;
 }
 
-uint16_t prescaler = 8400;
 double frequency = 50;
 
 bool buttonReleased = true;
@@ -121,7 +120,7 @@ uint32_t offset = 0;
 uint32_t elapsed = 0;
 
 char *order; bool islo = true, run = false;
-int waittime = 1500, pwmOffset = 0;
+int waittime = 50, pwmOffset = 0;
 int lo = 0, hi = 0; bool newSignal = false;
 void loop() {
 	if (timer1.elapsedTime(milliseconds) > waittime) {
@@ -152,32 +151,38 @@ void loop() {
 			}
 			++i;
 		}
-		if(order[i-1] == '.') newSignal = false;
+		if(order[i-1] != '.') {
+			pwmOffset = 0;
+			newSignal = false;
+		}
 		if(newSignal){
 			pwmOffset = lo - atoi(lotext) * 20;
 			newSignal = false;
 		}
 		
 		lo = atoi(lotext) * 20;
-		if(step) {
-			hi = atoi(hitext) * 20;
-			waittime = 1500;
-		}
-		else {
-			hi = atoi(lotext) * 20;
-			waittime = 50;
-		}
+//		if(step) {
+//			hi = atoi(hitext) * 20;
+//			waittime = 1500;
+//		}
+//		else {
+//			hi = atoi(lotext) * 20;
+//			waittime = 50;
+//		}
 //		usart1.printf("lo: %i: hi: %i islo: %d\n",lo, hi, islo);
 		usart1.printf("%ssend between 40 and 90\npwm at: %i / 20000. ----> %i / 1000  pwmOffset: %i\n", (islo ? "_" : "+"), lo + pwmOffset, (lo + pwmOffset) / 20, pwmOffset);
 //		usart1.printf("pwm at: %i / 20000. ----> %i / 1000\n", (islo ? lo : hi), (islo ? lo : hi) / 20);
 		GPIO_ToggleBits(GPIOD, pin13);
 		
-//		*pwm1.CCR = (islo ? lo : hi) + pwmOffset;
+		*pwm1.CCR = lo;
+		*pwm2.CCR = lo;
+		*pwm3.CCR = lo;
+		*pwm4.CCR = lo;
 //		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
 //		*pwm3.CCR = (islo ? lo : hi) + pwmOffset;
 //		*pwm4.CCR = (islo ? lo : hi) + pwmOffset;
 		
-		pwm1.frequency(lo);
+//		pwm1.frequency(lo);
 		
 //		pwm1.write((islo ? lo : hi) + pwmOffset);
 //		pwm2.write((islo ? lo : hi) + pwmOffset);
@@ -187,9 +192,9 @@ void loop() {
 		islo = !islo;
 //		usart1.printf("hello%i", 5);
 		
-		if(pwmOffset > 0) pwmOffset -= 10;
-		else if(pwmOffset < 0) pwmOffset += 10;
-		if(pwmOffset > -10 && pwmOffset < 10) pwmOffset = 0;
+		if(pwmOffset > 0) pwmOffset -= 100;
+		else if(pwmOffset < 0) pwmOffset += 100;
+		if(pwmOffset > -100 && pwmOffset < 100) pwmOffset = 0;
 		
 	}
 //	int elapsed = elapsedTime(offset, microseconds);

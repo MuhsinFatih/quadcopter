@@ -57,9 +57,9 @@ void pwm::setupPWM(GPIO_TypeDef *GPIOx, int *pins, int numOfPins) {
 //	GPIO_PinAFConfig(GPIOx, GPIO_PinSource7, GPIO_AF_TIM4);
 	
 	
-	uint16_t prescaler = (uint16_t)84;
+	uint16_t prescaler = (uint16_t)84 - 1;
 	
-	timeBaseStructure.TIM_Period		= 19999;
+	timeBaseStructure.TIM_Period		= 20000;
 	timeBaseStructure.TIM_Prescaler		= prescaler;
 	timeBaseStructure.TIM_ClockDivision	= 0;
 	timeBaseStructure.TIM_CounterMode	= TIM_CounterMode_Up;	// count 0 -> cnt
@@ -69,10 +69,10 @@ void pwm::setupPWM(GPIO_TypeDef *GPIOx, int *pins, int numOfPins) {
 	// common timer settings
 	// pwm mode 1: set on compare match
 	// pwm mode 2: clear on compare match
-	outputControlStrucure.TIM_OCMode		= TIM_OCMode_PWM1;
+	outputControlStrucure.TIM_OCMode		= TIM_OCMode_PWM2;
 	outputControlStrucure.TIM_OutputState	= TIM_OutputState_Enable;
 	outputControlStrucure.TIM_Pulse			= 0;
-	outputControlStrucure.TIM_OCPolarity	= TIM_OCPolarity_High;
+	outputControlStrucure.TIM_OCPolarity	= TIM_OCPolarity_Low;
 	
 	TIM_OC1Init(TIM4, &outputControlStrucure);
 	TIM_OC1PreloadConfig(TIM4, TIM_OCPreload_Enable);
