@@ -1,13 +1,14 @@
 
 #include "main.hpp"
 #include "i2c.hpp"
+#include <stm32f4xx_i2c.h>
 
 #define readPin(idr,pin) (idr & pin)
 #define enableFloatingPoint() (*((int*)0xE000ED88))|=0x0F00000;  // Floating Point donanimini aktiflestir.
 
 using namespace std;
 
-
+void I2C_write(I2C_TypeDef* I2Cx, uint8_t data);
 // MARK: button click with interrupt
 int btnOffset = 0;
 int btnElapsed = 0;
@@ -69,131 +70,7 @@ const char *byte_to_binary(int x)
 	return b;
 }
 
-void MPU6050_I2C_Init(GPIO_TypeDef* port, uint16_t pins) {
-	GPIO_InitTypeDef structure; // this is for the gpio pins used as i2c1 SDA and i2c1 SCL
-	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-	
-	structure.GPIO_Pin = MPU6050_I2C_SCL_Pin | MPU6050_I2C_SDA_Pin;
-	structure.GPIO_Mode = GPIO_Mode_AF;
-	structure.GPIO_Speed = GPIO_Speed_50MHz;
-	structure.GPIO_OType = GPIO_OType_OD; // open drain
-	structure.GPIO_PuPd = GPIO_PuPd_UP; // devices can only pull low. so pull up resistor to make sure it is passively pulled high
-	GPIO_Init(MPU6050_I2C_Port, &structure);
-	
-	
-	I2C_InitTypeDef i2cStruct;
-	
-	i2cStruct.I2C_Mode = I2C_Mode_I2C; // ehm. what else?
-	i2cStruct.I2C_DutyCycle = I2C_DutyCycle_2; // whats this exactly?
-	i2cStruct.I2C_OwnAddress1 = MPU6050_DEFAULT_ADDRESS;
-	i2cStruct.I2C_Ack = I2C_Ack_Enable;
-	i2cStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit;
-	i2cStruct.I2C_ClockSpeed = MPU6050_I2C_Speed;
-	
-	I2C_Init(MPU6050_I2C, &i2cStruct);
-	
-	// reset i2c1
-	//	I2C_DeInit(I2C1);
-	
-	I2C_Cmd(MPU6050_I2C, ENABLE);
-	
-	
-}
 usart usart1 = usart();
-
-void MPU6050_I2C_BufferRead(u8 slaveAddr, u8* pBuffer, u8 readAddr, u16 NumByteToRead)
-{
-	// ENTR_CRT_SECTION();
-	
-	/* While the bus is busy */
-	while (I2C_GetFlagStatus(MPU6050_I2C, I2C_FLAG_BUSY));
-	usart1.printf("1\n");
-	/* Send START condition */
-	I2C_GenerateSTART(MPU6050_I2C, ENABLE);
-	usart1.printf("1\n");
-	/* Test on EV5 and clear it */
-	while (!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_MODE_SELECT));
-	usart1.printf("1\n");
-	/* Send MPU6050 address for write */
-	I2C_Send7bitAddress(MPU6050_I2C, slaveAddr, I2C_Direction_Transmitter);
-	usart1.printf("1\n");
-	/* Test on EV6 and clear it */
-	while (!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_TRANSMITTER_MODE_SELECTED));
-	usart1.printf("1\n");
-	/* Clear EV6 by setting again the PE bit */
-	I2C_Cmd(MPU6050_I2C, ENABLE);
-	
-	/* Send the MPU6050's internal address to write to */
-	I2C_SendData(MPU6050_I2C, readAddr);
-	
-	/* Test on EV8 and clear it */
-	while (!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
-	
-	/* Send STRAT condition a second time */
-	I2C_GenerateSTART(MPU6050_I2C, ENABLE);
-	
-	/* Test on EV5 and clear it */
-	while (!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_MODE_SELECT));
-	
-	/* Send MPU6050 address for read */
-	I2C_Send7bitAddress(MPU6050_I2C, slaveAddr, I2C_Direction_Receiver);
-	
-	/* Test on EV6 and clear it */
-	while (!I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_RECEIVER_MODE_SELECTED));
-	
-	/* While there is data to be read */
-	while (NumByteToRead)
-	{
-		if (NumByteToRead == 1)
-		{
-			/* Disable Acknowledgement */
-			I2C_AcknowledgeConfig(MPU6050_I2C, DISABLE);
-			
-			/* Send STOP Condition */
-			I2C_GenerateSTOP(MPU6050_I2C, ENABLE);
-		}
-		
-		/* Test on EV7 and clear it */
-		if (I2C_CheckEvent(MPU6050_I2C, I2C_EVENT_MASTER_BYTE_RECEIVED))
-		{
-			/* Read a byte from the MPU6050 */
-			*pBuffer = I2C_ReceiveData(MPU6050_I2C);
-			
-			/* Point to the next location where the byte read will be saved */
-			pBuffer++;
-			
-			/* Decrement the read bytes counter */
-			NumByteToRead--;
-		}
-	}
-	
-	/* Enable Acknowledgement to be ready for another reception */
-	I2C_AcknowledgeConfig(MPU6050_I2C, ENABLE);
-	// EXT_CRT_SECTION();
-}
-void MPU6050_ReadBits(uint8_t slaveAddr, uint8_t regAddr, uint8_t bitStart, uint8_t length, uint8_t *data)
-{
-	// 01101001 read byte
-	// 76543210 bit numbers
-	//    xxx   args: bitStart=4, length=3
-	//    010   masked
-	//   -> 010 shifted
-	uint8_t tmp;
-	MPU6050_I2C_BufferRead(slaveAddr, &tmp, regAddr, 1);
-	uint8_t mask = ((1 << length) - 1) << (bitStart - length + 1);
-	tmp &= mask;
-	tmp >>= (bitStart - length + 1);
-	*data = tmp;
-}
-
-uint8_t MPU6050_GetDeviceID()
-{
-	uint8_t tmp;
-	MPU6050_ReadBits(MPU6050_DEFAULT_ADDRESS, MPU6050_RA_WHO_AM_I, MPU6050_WHO_AM_I_BIT, MPU6050_WHO_AM_I_LENGTH, &tmp);
-	return tmp;
-}
 
 timer timer1 = timer();
 
@@ -242,17 +119,79 @@ void setup() {
 //	*pwm4.CCR = 90 * 20;
 	
 	
+	GPIO_InitTypeDef gpioStruct;
+	I2C_InitTypeDef i2cStruct;
 	
 	
-	GPIO_PinAFConfig(GPIOB, MPU6050_I2C_SCL_Pin, GPIO_AF_I2C2);
-	GPIO_PinAFConfig(GPIOB, MPU6050_I2C_SDA_Pin, GPIO_AF_I2C2);
-	usart1.printf("debug...\n");
-	MPU6050_I2C_Init(GPIOB, 0); // args are temp and random
+	GPIO_PinAFConfig(GPIOB, pin10, GPIO_AF_I2C2);
+	GPIO_PinAFConfig(GPIOB, pin11, GPIO_AF_I2C2);
+	usart1.printf("debug 1\n");
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	
+	gpioStruct.GPIO_Pin = pin6 | pin7;
+	gpioStruct.GPIO_Mode = GPIO_Mode_AF;
+	gpioStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	gpioStruct.GPIO_OType = GPIO_OType_OD;			// set output to open drain --> the line has to be only pulled low, not driven high
+	gpioStruct.GPIO_PuPd = GPIO_PuPd_UP;			// enable pull up resistors
+	GPIO_Init(GPIOB, &gpioStruct);
+	
+	GPIO_PinAFConfig(GPIOB, EXTI_PinSource10, GPIO_AF_I2C2);
+	GPIO_PinAFConfig(GPIOB, EXTI_PinSource11, GPIO_AF_I2C2);
+	
+	i2cStruct.I2C_ClockSpeed = 100000;
+	i2cStruct.I2C_Mode = I2C_Mode_I2C;
+	i2cStruct.I2C_DutyCycle = I2C_DutyCycle_2;	// 50% duty cycle --> standard
+	i2cStruct.I2C_OwnAddress1 = 0x00;			// own address, not relevant in master mode
+	i2cStruct.I2C_Ack = I2C_Ack_Disable;		// disable acknowledge when reading (can be changed later on)
+	i2cStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit; // set address length to 7 bit addresses
+	I2C_Init(I2C2, &i2cStruct);
+	
+	I2C_Cmd(I2C2, ENABLE);
+	
+	usart1.printf("debug 2\n");
+	int ms = timer1.elapsedTime(milliseconds);
+	
+	// wait while i2c2 is busy
+	while (I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
+	usart1.printf("waited for i2c2 busy for %i\n", timer1.elapsedTime(milliseconds) - ms);
+	
+	// Send I2C1 START condition
+	I2C_GenerateSTART(I2C2, ENABLE);
+	
+	ms = timer1.elapsedTime(milliseconds);
+	
+	// wait for I2C2 EV5 --> Slave has acknowledged start condition
+	while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_MODE_SELECT));
+	usart1.printf("waited for i2c2 check for %i\n", timer1.elapsedTime(milliseconds) - ms);
+	
+	I2C_AcknowledgeConfig(I2C2, ENABLE);
+	
+	ms = timer1.elapsedTime(milliseconds);
+	
+	// wait until one byte has been received
+	while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED));
+	usart1.printf("waited for i2c2 check for %i\n", timer1.elapsedTime(milliseconds) - ms);
+	
+	// read data from I2C data register and return data byte
+	uint8_t data = I2C_ReceiveData(I2C2);
+	usart1.printf("data = %i\n", data);
+	
+	
+	I2C_write(I2C2, 0x75);
 	while(true){
-		usart1.printf("id: %d\n", MPU6050_GetDeviceID());
+//		usart1.printf("id: %d\n", MPU6050_GetDeviceID());
 		delay(500);
 	}
 	
+}
+
+void I2C_write(I2C_TypeDef* I2Cx, uint8_t data)
+{
+	I2C_SendData(I2Cx, data);
+	// wait for I2C1 EV8_2 --> byte has been transmitted
+	while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 }
 
 double frequency = 50;
