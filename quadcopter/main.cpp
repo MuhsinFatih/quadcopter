@@ -80,6 +80,7 @@ pwm pwm3 = pwm();
 pwm pwm4 = pwm();
 
 void setup() {
+	
 	enableFloatingPoint();
 	setSysTick();
 	setup_button();
@@ -122,23 +123,23 @@ void setup() {
 	GPIO_InitTypeDef gpioStruct;
 	I2C_InitTypeDef i2cStruct;
 	
-	
-	GPIO_PinAFConfig(GPIOB, pin10, GPIO_AF_I2C2);
-	GPIO_PinAFConfig(GPIOB, pin11, GPIO_AF_I2C2);
-	usart1.printf("debug 1\n");
-	
-	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
+	RCC_APB2PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
 	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
 	
-	gpioStruct.GPIO_Pin = pin6 | pin7;
+	usart1.printf("debug 1\n");
+	
+	
+	gpioStruct.GPIO_Pin = pin10 | pin11;
 	gpioStruct.GPIO_Mode = GPIO_Mode_AF;
 	gpioStruct.GPIO_Speed = GPIO_Speed_50MHz;
 	gpioStruct.GPIO_OType = GPIO_OType_OD;			// set output to open drain --> the line has to be only pulled low, not driven high
 	gpioStruct.GPIO_PuPd = GPIO_PuPd_UP;			// enable pull up resistors
 	GPIO_Init(GPIOB, &gpioStruct);
 	
-	GPIO_PinAFConfig(GPIOB, EXTI_PinSource10, GPIO_AF_I2C2);
-	GPIO_PinAFConfig(GPIOB, EXTI_PinSource11, GPIO_AF_I2C2);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_I2C2);
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_I2C2);
+//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource10, GPIO_AF_I2C2);
+//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource11, GPIO_AF_I2C2);
 	
 	i2cStruct.I2C_ClockSpeed = 100000;
 	i2cStruct.I2C_Mode = I2C_Mode_I2C;
@@ -151,15 +152,15 @@ void setup() {
 	I2C_Cmd(I2C2, ENABLE);
 	
 	usart1.printf("debug 2\n");
-	int ms = timer1.elapsedTime(milliseconds);
+	int ms = timer1.elapsedTime(microseconds);
 	
 	// wait while i2c2 is busy
 	while (I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
-	usart1.printf("waited for i2c2 busy for %i\n", timer1.elapsedTime(milliseconds) - ms);
+	usart1.printf("waited for i2c2 busy for %i\n", timer1.elapsedTime(microseconds) - ms);
 	
-	// Send I2C1 START condition
+	// Send I2C2 START condition
 	I2C_GenerateSTART(I2C2, ENABLE);
-	
+	usart1.printf("debug 3\n");
 	ms = timer1.elapsedTime(milliseconds);
 	
 	// wait for I2C2 EV5 --> Slave has acknowledged start condition
