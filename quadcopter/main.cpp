@@ -9,6 +9,7 @@
 using namespace std;
 
 void I2C_write(I2C_TypeDef* I2Cx, uint8_t data);
+void i2ctest();
 // MARK: button click with interrupt
 int btnOffset = 0;
 int btnElapsed = 0;
@@ -114,12 +115,12 @@ void setup() {
 	pwm2.write(0);
 	pwm3.write(0);
 	pwm4.write(0);
-//	*pwm1.CCR = 90 * 20;
-//	*pwm2.CCR = 90 * 20;
-//	*pwm3.CCR = 90 * 20;
-//	*pwm4.CCR = 90 * 20;
+
 	
+	//i2ctest();
 	
+}
+void i2ctest() {
 	GPIO_InitTypeDef gpioStruct;
 	I2C_InitTypeDef i2cStruct;
 	
@@ -138,8 +139,8 @@ void setup() {
 	
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_I2C2);
 	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_I2C2);
-//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource10, GPIO_AF_I2C2);
-//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource11, GPIO_AF_I2C2);
+	//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource10, GPIO_AF_I2C2);
+	//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource11, GPIO_AF_I2C2);
 	
 	i2cStruct.I2C_ClockSpeed = 100000;
 	i2cStruct.I2C_Mode = I2C_Mode_I2C;
@@ -182,12 +183,10 @@ void setup() {
 	
 	I2C_write(I2C2, 0x75);
 	while(true){
-//		usart1.printf("id: %d\n", MPU6050_GetDeviceID());
+		//		usart1.printf("id: %d\n", MPU6050_GetDeviceID());
 		delay(500);
 	}
-	
 }
-
 void I2C_write(I2C_TypeDef* I2Cx, uint8_t data)
 {
 	I2C_SendData(I2Cx, data);
@@ -243,87 +242,21 @@ void loop() {
 		}
 		
 		lo = atoi(lotext) * 20;
-//		if(step) {
-//			hi = atoi(hitext) * 20;
-//			waittime = 1500;
-//		}
-//		else {
-//			hi = atoi(lotext) * 20;
-//			waittime = 50;
-//		}
-//		usart1.printf("lo: %i: hi: %i islo: %d\n",lo, hi, islo);
 		usart1.printf("%ssend between 40 and 90\npwm at: %i / 20000. ----> %i / 1000  pwmOffset: %i\n", (islo ? "_" : "+"), lo + pwmOffset, (lo + pwmOffset) / 20, pwmOffset);
-//		usart1.printf("pwm at: %i / 20000. ----> %i / 1000\n", (islo ? lo : hi), (islo ? lo : hi) / 20);
 		GPIO_ToggleBits(GPIOD, pin13);
-		
-//		pwm1.write(lo);
-//		pwm2.write(lo);
-//		pwm3.write(lo);
-//		pwm4.write(lo);
 		
 		*pwm1.CCR = lo;
 		*pwm2.CCR = lo;
 		*pwm3.CCR = lo;
 		*pwm4.CCR = lo;
-//		*pwm2.CCR = (islo ? lo : hi) + pwmOffset;
-//		*pwm3.CCR = (islo ? lo : hi) + pwmOffset;
-//		*pwm4.CCR = (islo ? lo : hi) + pwmOffset;
 		
-//		pwm1.frequency(lo);
-		
-//		pwm1.write((islo ? lo : hi) + pwmOffset);
-//		pwm2.write((islo ? lo : hi) + pwmOffset);
-//		TIM4->CCR1 = (islo ? lo : hi) + pwmOffset;
-//		TIM4->CCR2 = (islo ? lo : hi) + pwmOffset;
-//		TIM4->CCR2 = (((islo ? lo : hi) * 100) % (hi - lo) + lo);
 		islo = !islo;
-//		usart1.printf("hello%i", 5);
 		
 		if(pwmOffset > 0) pwmOffset -= 100;
 		else if(pwmOffset < 0) pwmOffset += 100;
 		if(pwmOffset > -100 && pwmOffset < 100) pwmOffset = 0;
 		
 	}
-//	int elapsed = elapsedTime(offset, microseconds);
-//	offset = elapsed;
-//	if( elapsed > 1000000){
-//		GPIO_ToggleBits(GPIOD, pin15);
-//	}
-	
-	//	elapsed = elapsedTime(0, seconds);
-	////	msg[0] = '\0';
-	//
-	//	if(elapsed - offset > 0){
-	//		sprintf(msg, "%i passed\n", elapsed);
-	//		usart_puts(USART2, msg);
-	//		offset = elapsed;
-	//	}
-	//	usart_puts(USART2, msg);
-	
-	//	uint32_t period = getPeriod(0, frequency, 84 * 1000000, prescaler);
-	
-	
-	//	for(int i=900; i<2000; ++i) {
-	//		TIM4->CCR1 = i;
-	//		TIM4->CCR2 = i;
-	//		delay_micro(4000);
-	//		char qwe[20];
-	//		sprintf(qwe,"%i\n", i);
-	//		usart_puts(USART2,qwe);
-	//
-	//	}
-	//	TIM4->CCR1 = 19999;
-	//	TIM4->CCR2 = 19999;
-	//	delay(30*1000);
-	//	char* in;
-	//
-	//	if (newDataIn) {
-	////		TIM4->CCR1 = atoi(readUsart());
-	//		TIM4->CCR2 = atoi(readUsart());
-	//	}
-//	usart usart2(USART2, GPIOA, 6, 7);
-//	usart2.printf("asdf");
-	
 }
 
 
