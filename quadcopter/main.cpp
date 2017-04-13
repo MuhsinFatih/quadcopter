@@ -75,10 +75,10 @@ usart usart1 = usart();
 
 timer timer1 = timer();
 
-pwm pwm1 = pwm();
-pwm pwm2 = pwm();
-pwm pwm3 = pwm();
-pwm pwm4 = pwm();
+//pwm pwm1 = pwm();
+//pwm pwm2 = pwm();
+//pwm pwm3 = pwm();
+//pwm pwm4 = pwm();
 
 void setup() {
 	
@@ -105,93 +105,19 @@ void setup() {
 	timer1.start();
 	usart1 = usart(USART2, GPIOA, 2,3, 230400);
 	usart1.begin();
-	pwm1 = pwm(GPIOB, 6, &TIM4->CCR1);
-	pwm2 = pwm(GPIOB, 7, &TIM4->CCR2);
-	pwm3 = pwm(GPIOB, 8, &TIM4->CCR3);
-	pwm4 = pwm(GPIOB, 9, &TIM4->CCR4);
+//	pwm1 = pwm(GPIOB, 6, &TIM4->CCR1);
+//	pwm2 = pwm(GPIOB, 7, &TIM4->CCR2);
+//	pwm3 = pwm(GPIOB, 8, &TIM4->CCR3);
+//	pwm4 = pwm(GPIOB, 9, &TIM4->CCR4);
+	i2ctest();
 	
+//	pwm1.write(0);
+//	pwm2.write(0);
+//	pwm3.write(0);
+//	pwm4.write(0);
 	
-	pwm1.write(0);
-	pwm2.write(0);
-	pwm3.write(0);
-	pwm4.write(0);
-
+//	i2ctest();
 	
-	//i2ctest();
-	
-}
-void i2ctest() {
-	GPIO_InitTypeDef gpioStruct;
-	I2C_InitTypeDef i2cStruct;
-	
-	RCC_APB2PeriphClockCmd(RCC_APB1Periph_I2C2, ENABLE);
-	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
-	
-	usart1.printf("debug 1\n");
-	
-	
-	gpioStruct.GPIO_Pin = pin10 | pin11;
-	gpioStruct.GPIO_Mode = GPIO_Mode_AF;
-	gpioStruct.GPIO_Speed = GPIO_Speed_50MHz;
-	gpioStruct.GPIO_OType = GPIO_OType_OD;			// set output to open drain --> the line has to be only pulled low, not driven high
-	gpioStruct.GPIO_PuPd = GPIO_PuPd_UP;			// enable pull up resistors
-	GPIO_Init(GPIOB, &gpioStruct);
-	
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource10, GPIO_AF_I2C2);
-	GPIO_PinAFConfig(GPIOB, GPIO_PinSource11, GPIO_AF_I2C2);
-	//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource10, GPIO_AF_I2C2);
-	//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource11, GPIO_AF_I2C2);
-	
-	i2cStruct.I2C_ClockSpeed = 100000;
-	i2cStruct.I2C_Mode = I2C_Mode_I2C;
-	i2cStruct.I2C_DutyCycle = I2C_DutyCycle_2;	// 50% duty cycle --> standard
-	i2cStruct.I2C_OwnAddress1 = 0x00;			// own address, not relevant in master mode
-	i2cStruct.I2C_Ack = I2C_Ack_Disable;		// disable acknowledge when reading (can be changed later on)
-	i2cStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit; // set address length to 7 bit addresses
-	I2C_Init(I2C2, &i2cStruct);
-	
-	I2C_Cmd(I2C2, ENABLE);
-	
-	usart1.printf("debug 2\n");
-	int ms = timer1.elapsedTime(microseconds);
-	
-	// wait while i2c2 is busy
-	while (I2C_GetFlagStatus(I2C2, I2C_FLAG_BUSY));
-	usart1.printf("waited for i2c2 busy for %i\n", timer1.elapsedTime(microseconds) - ms);
-	
-	// Send I2C2 START condition
-	I2C_GenerateSTART(I2C2, ENABLE);
-	usart1.printf("debug 3\n");
-	ms = timer1.elapsedTime(milliseconds);
-	
-	// wait for I2C2 EV5 --> Slave has acknowledged start condition
-	while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_MODE_SELECT));
-	usart1.printf("waited for i2c2 check for %i\n", timer1.elapsedTime(milliseconds) - ms);
-	
-	I2C_AcknowledgeConfig(I2C2, ENABLE);
-	
-	ms = timer1.elapsedTime(milliseconds);
-	
-	// wait until one byte has been received
-	while (!I2C_CheckEvent(I2C2, I2C_EVENT_MASTER_BYTE_RECEIVED));
-	usart1.printf("waited for i2c2 check for %i\n", timer1.elapsedTime(milliseconds) - ms);
-	
-	// read data from I2C data register and return data byte
-	uint8_t data = I2C_ReceiveData(I2C2);
-	usart1.printf("data = %i\n", data);
-	
-	
-	I2C_write(I2C2, 0x75);
-	while(true){
-		//		usart1.printf("id: %d\n", MPU6050_GetDeviceID());
-		delay(500);
-	}
-}
-void I2C_write(I2C_TypeDef* I2Cx, uint8_t data)
-{
-	I2C_SendData(I2Cx, data);
-	// wait for I2C1 EV8_2 --> byte has been transmitted
-	while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
 }
 
 double frequency = 50;
@@ -203,7 +129,9 @@ uint32_t elapsed = 0;
 char *order; bool islo = true, run = false;
 int waittime = 50, pwmOffset = 0;
 int lo = 0, hi = 0; bool newSignal = false;
+void simulateFlight();
 void loop() {
+	
 	if (timer1.elapsedTime(milliseconds) > waittime) {
 		timer1.start();
 		if(usart1.available()){
@@ -215,6 +143,8 @@ void loop() {
 				newSignal = true;
 		}
 		if(!run) return;
+		
+//		simulateFlight();
 		
 		// for servo motor, edge pwm duty cycles are: 620 and 2400 / 20000 at 50 hz
 		
@@ -245,10 +175,10 @@ void loop() {
 		usart1.printf("%ssend between 40 and 90\npwm at: %i / 20000. ----> %i / 1000  pwmOffset: %i\n", (islo ? "_" : "+"), lo + pwmOffset, (lo + pwmOffset) / 20, pwmOffset);
 		GPIO_ToggleBits(GPIOD, pin13);
 		
-		*pwm1.CCR = lo;
-		*pwm2.CCR = lo;
-		*pwm3.CCR = lo;
-		*pwm4.CCR = lo;
+//		*pwm1.CCR = lo;
+//		*pwm2.CCR = lo;
+//		*pwm3.CCR = lo;
+//		*pwm4.CCR = lo;
 		
 		islo = !islo;
 		
@@ -259,9 +189,106 @@ void loop() {
 	}
 }
 
+class quadcopter {
+public:
+	double weight;
+	
+	struct body { // everything relative to center
+		double centerOfMass;
+		double accelPos;
+		double gyroPos;
+		double motorsPos;
+	} body;
+	
+	struct gyro{ double X, Y, Z;} gyro;
+	struct accel{ double X, Y, Z;} accel;
+	
+};
 
+void simulateFlight(){
+	// order is global
+	quadcopter quadro = quadcopter();
+	quadro.body.accelPos = 5;
+}
 
+void i2ctest() {
+	GPIO_InitTypeDef gpioStruct;
+	I2C_InitTypeDef i2cStruct;
+	
+	RCC_APB1PeriphClockCmd(RCC_APB1Periph_I2C1, ENABLE);
+	RCC_AHB1PeriphClockCmd(RCC_AHB1Periph_GPIOB, ENABLE);
+	
+	usart1.printf("debug 1\n");
+	
+	
+	gpioStruct.GPIO_Pin = pin6 | pin7;
+	gpioStruct.GPIO_Mode = GPIO_Mode_AF;
+	gpioStruct.GPIO_Speed = GPIO_Speed_50MHz;
+	gpioStruct.GPIO_OType = GPIO_OType_OD;			// set output to open drain --> the line has to be only pulled low, not driven high
+	gpioStruct.GPIO_PuPd = GPIO_PuPd_UP;			// enable pull up resistors
+	GPIO_Init(GPIOB, &gpioStruct);
+	
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource6, GPIO_AF_I2C1); // SCL
+	GPIO_PinAFConfig(GPIOB, GPIO_PinSource7, GPIO_AF_I2C1); // SDA
+	//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource10, GPIO_AF_I2C1);
+	//	GPIO_PinAFConfig(GPIOB, EXTI_PinSource11, GPIO_AF_I2C1);
+	
+	i2cStruct.I2C_ClockSpeed = 100000;
+	i2cStruct.I2C_Mode = I2C_Mode_I2C;
+	i2cStruct.I2C_DutyCycle = I2C_DutyCycle_2;	// 50% duty cycle --> standard
+	i2cStruct.I2C_OwnAddress1 = 0x00;			// own address, not relevant in master mode
+	i2cStruct.I2C_Ack = I2C_Ack_Enable;
+	i2cStruct.I2C_AcknowledgedAddress = I2C_AcknowledgedAddress_7bit; // set address length to 7 bit addresses
+	I2C_Init(I2C1, &i2cStruct);
+	
+	I2C_Cmd(I2C1, ENABLE);
+	
+	usart1.printf("debug 2\n");
+	int ms = timer1.elapsedTime(microseconds);
+	
+	// wait while I2C1 is busy
+	while (I2C_GetFlagStatus(I2C1, I2C_FLAG_BUSY));
+	usart1.printf("waited for I2C1 busy for %i\n", timer1.elapsedTime(microseconds) - ms);
+	
+	// Send I2C1 START condition
+	I2C_GenerateSTART(I2C1, ENABLE);
+	usart1.printf("debug 3\n");
+	ms = timer1.elapsedTime(milliseconds);
 
+	
+//	I2C_write(I2C1, 0x75);
+	usart1.printf("debug 4\n");
+	
+	// wait for I2C1 EV5 --> Slave has acknowledged start condition
+	while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_MODE_SELECT));
+	usart1.printf("waited for I2C1 check for %i\n", timer1.elapsedTime(milliseconds) - ms);
+	
+	I2C_AcknowledgeConfig(I2C1, ENABLE);
+	usart1.printf("debug 5\n");
+	ms = timer1.elapsedTime(milliseconds);
+	
+	// wait until one byte has been received
+	while (!I2C_CheckEvent(I2C1, I2C_EVENT_MASTER_BYTE_RECEIVED));
+	usart1.printf("waited for I2C1 check for %i\n", timer1.elapsedTime(milliseconds) - ms);
+	
+	I2C_write(I2C1, 0x75);
+	// read data from I2C data register and return data byte
+	uint8_t data = I2C_ReceiveData(I2C1);
+	usart1.printf("data = %i\n", data);
+	
+	
+	while(true){
+		//		usart1.printf("id: %d\n", MPU6050_GetDeviceID());
+		delay(500);
+	}
+}
+void I2C_write(I2C_TypeDef* I2Cx, uint8_t data)
+{
+	I2C_SendData(I2Cx, data);
+	
+	// wait for I2C1 EV8_2 --> byte has been transmitted
+//	while(!I2C_CheckEvent(I2Cx, I2C_EVENT_MASTER_BYTE_TRANSMITTED));
+}
 
 
 
